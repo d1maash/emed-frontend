@@ -6,6 +6,30 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+
+  /*? Design colors */
+  --primary-90: #2B6BCC;
+  --primary-60: #4F9CDA;
+  --primary-30: #B3D1FF;
+
+  --accent: #FFC300;
+  --success: #3CB371;
+  --error: #D64545;
+  --warning: #FFD54D;
+
+  --coolgray-100: #1C1C1C;
+  --coolgray-90: #2B2B2B;
+  --coolgray-80: #363636;
+  --coolgray-70: #515151;
+  --coolgray-60: #696969;
+  --coolgray-50: #939393;
+  --coolgray-40: #B1B1B1;
+  --coolgray-30: #DADADA;
+  --coolgray-20: #F9F9F9;
+
+  --overlay-70: #1C1C1C / 70%;
+  --overlay-50: #1C1C1C / 50%;
+  --overlay-30: #1C1C1C / 30%;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,6 +49,114 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+h1 {
+  font-weight: bold;
+  font-size: 54px;
+  line-height: 110%;
+  letter-spacing: 0px;
+}
+h2 {
+  font-weight: bold;
+  font-size: 42px;
+  line-height: 110%;
+  letter-spacing: 0px;
+}
+h3 {
+  font-weight: bold;
+  font-size: 32px;
+  line-height: 110%;
+  letter-spacing: 0px;
+}
+h4 {
+  font-weight: bold;
+  font-size: 24px;
+  line-height: 110%;
+  letter-spacing: 0px;
+}
+h5 {
+  font-weight: bold;
+  font-size: 20px;
+  line-height: 110%;
+  letter-spacing: 0px;
+}
+h6 {
+  font-weight: bold;
+  font-size: 18px;
+  line-height: 110%;
+  letter-spacing: 0px;
+}
+
+.body-l {
+  font-size: 24px;
+  line-height: 140%;
+  letter-spacing: 0px;  
+}
+.body-m {
+  font-size: 20px;
+  line-height: 140%;
+  letter-spacing: 0px;  
+}
+.body-s {
+  font-size: 18px;
+  line-height: 140%;
+  letter-spacing: 0px;  
+}
+.body-xs {
+  font-size: 14px;
+  line-height: 140%;
+  letter-spacing: 0px;  
+}
+.body-2xs {
+  font-size: 12px;
+  line-height: 140%;
+  letter-spacing: 0px;  
+}
+
+.title{
+  font-size: 30px !important;
+  line-height: 110% !important;
+  letter-spacing: 0px !important;
+}
+
+.subtitle-l {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0px;
+}
+.subtitle-m {
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0px;
+}
+.subtitle-s {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0px;
+}
+
+.caption {
+  font-weight: bold;
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+.button-l {
+  font-weight: 500;
+  font-size: 24px;
+  letter-spacing: 0.5px;
+}
+.button-m {
+  font-weight: 500;
+  font-size: 20px;
+  letter-spacing: 0.5px;
+}
+.button-s {
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+
 
 @layer utilities {
   .text-balance {
