@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn(`${montserrat.className}`, "")}>{children}</body>
+      <body className={cn(`${montserrat.className}`, "h-full overflow-y-auto w-full")}>{children}</body>
     </html>
   );
 }
