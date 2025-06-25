@@ -1,50 +1,22 @@
-import { cn } from '@/lib/utils'
-import { cva, type VariantProps } from "class-variance-authority";
-import React from 'react'
+import * as React from "react"
 
-const inputVariants = cva(
-    "min-w-[200px] min-h-[40px] px-4 py-2 rounded-[10px] text-[--coolgray-60] placeholder:text-[--coolgray-60]",
-    {
-        variants: {
-            variant: {
-                default: "border ",
-                outline: "border border-[--overlay-50] title",
-            }
-        },
-        defaultVariants: {
-            variant: "default",
-        }
-    }
-)
+import { cn } from "@/lib/utils"
 
-export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement>,
-    VariantProps<typeof inputVariants> {
-      error?: string;
-    }
-
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, variant, error, value, onChange, ...props }, ref) => {
-    const hasError = !!error && (!value || value === "")
-
+const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
+  ({ className, type, ...props }, ref) => {
     return (
-      <div className='w-full'>
       <input
-        ref={ref}
-        className={
-          cn(
-            inputVariants({ variant }),
-            hasError && 'border-[--error] placeholder:text-[--error]', 
-            className)
-        }
-        {...props}
-        />
-        {hasError && (
-          <p className='text-[--error] body-xs'>{error}</p>
+        type={type}
+        className={cn(
+          "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+          className
         )}
-      </div>
-    );
+        ref={ref}
+        {...props}
+      />
+    )
   }
-);
+)
+Input.displayName = "Input"
 
-export default Input
+export { Input }

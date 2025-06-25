@@ -1,8 +1,10 @@
 "use client"
 
+import Calendar29 from '@/components/calendar-29'
 import Logo from '@/components/Logo'
-import Button from '@/components/ui/Button'
-import Input from '@/components/ui/Input'
+import Button from '@/components/myui/Button'
+import Input from '@/components/myui/Input'
+import { Calendar } from '@/components/ui/calendar'
 import Link from 'next/link'
 import React, { useState } from 'react'
 
@@ -16,23 +18,20 @@ const Register = () => {
   const [oblast, setOblast] = useState("")
   const [pass1, setPass1] = useState("")
   const [pass2, setPass2] = useState("")
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>()
 
 
   return (
-
-    <div className='max-w-3xl md:min-w-[450px] flex flex-col w-full h-full bg-white pb-2 px-8 pt-10 md:px-16 md:pt-16 lg:px-[5.75rem] lg:pt-[4.5rem] rounded-[50px]'>
-      <div className='h-[98px]'>
-      <Logo variant="blue" width={337} height={98}/>
-      </div>
+      <>
       <div className='mt-4'>
-      <Link href="/login" className='body-l text-[--coolgray-90]'>
-        У меня уже есть аккаунт
-      </Link>
+        <Link href="/login" className='body-l text-[--coolgray-90]'>
+          У меня уже есть аккаунт
+        </Link>
       </div>
       <form onSubmit={(e) => {
         e.preventDefault();
         }} 
-        className='flex-1 overflow-auto pb-14 h-full'
+        className='flex-1 pt-4 pb-14 h-full overflow-auto'
         >
         <Input 
           placeholder="Фамилия*" type="text" 
@@ -57,11 +56,14 @@ const Register = () => {
         {/* 
           TODO: Input Birthday
         */}
-        <Input 
-          placeholder="Дата рождения*" type="text" 
-          variant="outline" className='w-full mt-2 md:mt-[30px] px-5 py-[15px]'
-          // value={email} onChange={(e) => setEmail(e.target.value)}
+        <div>
+
+        <Calendar29 
+          placeholder='Дата рождения*' 
+          date={selectedDate}
+          onDateChange={setSelectedDate}
           />
+        </div>
         {/* 
           TODO: Input PhoneNumber
         */}
@@ -98,7 +100,7 @@ const Register = () => {
           Запросить код подтверждения
         </Button>
       </form>
-    </div>
+      </>
   )
 }
 
