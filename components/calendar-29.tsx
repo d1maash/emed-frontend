@@ -1,66 +1,70 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { parseDate } from "chrono-node"
+import { useState } from "react";
+import { parseDate } from "chrono-node";
 
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/Button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import Input from "./myui/Input"
-import Image from "next/image"
+} from "@/components/ui/popover";
+import Input from "./myui/Input";
 
 function formatDate(date: Date | undefined) {
   if (!date) {
-    return ""
+    return "";
   }
 
   return date.toLocaleDateString("ru-RU", {
     day: "numeric",
     month: "long",
     year: "numeric",
-  })
+  });
 }
 
 interface BDCalendarProps {
-  placeholder: string,
+  placeholder: string;
   date: Date | undefined;
   onDateChange: (date: Date | undefined) => void;
+  error?: string;
 }
 
 export default function Calendar29({
   placeholder,
   date,
-  onDateChange
+  onDateChange,
+  error,
 }: BDCalendarProps) {
-  const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState("In 2 days")
-  const [month, setMonth] = React.useState<Date | undefined>(date)
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
+  const [month, setMonth] = useState<Date | undefined>(date);
 
   return (
-    <div className="mt-2 md:mt-[30px] relative flex justify-center items-center">
+    <div
+      className={`relative flex justify-center items-center ${
+        error ? "border-[--error]" : ""
+      }`}
+    >
       <Input
         id="date"
-        variant="outline"
         value={value}
         placeholder={placeholder}
-        className="w-full pl-14 pr-5 py-[15px]"
+        className="w-full pl-12 pr-5"
+        error={error}
         onChange={(e) => {
-          setValue(e.target.value)
-          const date = parseDate(e.target.value)
+          setValue(e.target.value);
+          const date = parseDate(e.target.value);
           if (date) {
-            onDateChange(date)
-            setMonth(date)
+            onDateChange(date);
+            setMonth(date);
           }
         }}
         onKeyDown={(e) => {
           if (e.key === "ArrowDown") {
-            e.preventDefault()
-            setOpen(true)
+            e.preventDefault();
+            setOpen(true);
           }
         }}
       />
@@ -70,9 +74,15 @@ export default function Calendar29({
             size="icon"
             id="date-picker"
             variant="ghost"
-            className="absolute top-1/2 left-3.5 -translate-y-1/2"
+            className={`absolute top-1/2 left-2 ${
+              error ? "-translate-y-2/3" : "-translate-y-1/2"
+            }`}
           >
-            <img alt="calendar" src="/icons/solar--calendar-linear.svg" className="h-8 w-8 opacity-70"/>
+            <img
+              alt="calendar"
+              src="/icons/solar--calendar-linear.svg"
+              className="h-5 w-5 opacity-70"
+            />
             <span className="sr-only">Выберите дату</span>
           </Button>
         </PopoverTrigger>
@@ -84,13 +94,13 @@ export default function Calendar29({
             month={month}
             onMonthChange={setMonth}
             onSelect={(date) => {
-              onDateChange(date)
-              setValue(formatDate(date))
-              setOpen(false)
+              onDateChange(date);
+              setValue(formatDate(date));
+              setOpen(false);
             }}
           />
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

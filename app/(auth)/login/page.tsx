@@ -1,44 +1,89 @@
-"use client"
+"use client";
 
-import Logo from '@/components/Logo'
-import Button from '@/components/myui/Button'
-import Input from '@/components/myui/Input'
-import Link from 'next/link'
-import React, { useState } from 'react'
+import Button from "@/components/myui/Button";
+import Input from "@/components/myui/Input";
+import Logo from "@/components/Logo";
+import Link from "next/link";
+import React, { useState } from "react";
+import { Eye, EyeClosed, EyeOff } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+// Валидация
+const loginSchema = z.object({
+  login: z.string().min(1, "Логин обязателен"),
+  password: z.string().min(1, "Пароль обязателен"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login = () => {
+  const [showPassword, setShowPassword] = useState(false);
 
-    const [login, setLogin] = useState("")
-    const [password, setPassword] = useState("")
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    mode: "onChange",
+    defaultValues: {
+      login: "",
+      password: "",
+    },
+  });
 
+  const onSubmit = (data: LoginFormData) => {
+    console.log(data);
+    // TODO:
+  };
 
-    return (
-        <>
-            <form onSubmit={()=>{}} className=''>
-                <Input 
-                    placeholder="Логин" type="text" 
-                    variant="outline" className='w-full mt-8 md:mt-[3.75rem] px-5 py-6'
-                    value={login} onChange={(e) => setLogin(e.target.value)}
-                    />
-                <Input 
-                    placeholder="Пароль" type="password" 
-                    variant="outline" className='w-full mt-2 md:mt-5 px-5 py-6'
-                    value={password} onChange={(e) => setPassword(e.target.value)}
-                    />
-                <Button variant="filled" size="large" className='w-full mt-8 md:mt-[3.75rem] py-[22px]'>
-                    Войти
-                </Button>
-            </form>
-            <div className='w-full flex flex-col justify-between items-start md:flex-row md:justify-between md:items-center mt-8 md:mt-[3.75rem] pb-10 md:pb-16 lg:pb-[4.5rem]'>
-                <p className="button-s text-[--coolgray-50]">
-                    Забыли пароль?
-                </p>
-                <Link href="/register" className='mt-3 md:m-0 button-s text-[--coolgray-50]'>
-                    Зарегистрироваться
-                </Link>
-            </div>
-        </>
-    )
-}
+  return (
+    <>
+      <div className="flex flex-col items-center sm:items-start mb-8">
+        <Logo width={200} height={48} variant="blue" />
+      </div>
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
+        <Input
+          {...register("login")}
+          placeholder="Логин"
+          autoComplete="username"
+          className="w-full"
+          error={errors.login?.message}
+        />
+        <Input
+          {...register("password")}
+          placeholder="Пароль"
+          type={showPassword ? "text" : "password"}
+          autoComplete="current-password"
+          className="w-full"
+          error={errors.password?.message}
+          rightIcon={
+            <span onClick={() => setShowPassword((v) => !v)} tabIndex={-1}>
+              {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
+            </span>
+          }
+        />
+        <Button
+          type="submit"
+          className="mt-2 w-full"
+          size="medium"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Вход..." : "Войти"}
+        </Button>
+      </form>
+      <div className="flex justify-between mt-4 text-xs text-gray-500">
+        <Link href="/reset-password" className="hover:underline">
+          Забыли пароль?
+        </Link>
+        <Link href="/register" className="hover:underline">
+          Зарегистрироваться
+        </Link>
+      </div>
+    </>
+  );
+};
 
-export default Login
+export default Login;
