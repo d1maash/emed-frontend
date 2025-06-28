@@ -87,7 +87,7 @@ export default function Calendar29({
             id="date-picker"
             variant="ghost"
             className={`absolute top-1/2 left-2 ${
-              error ? "-translate-y-2/3" : "-translate-y-1/2"
+              error ? "-translate-y-3/4" : "-translate-y-1/2"
             }`}
           >
             <img
