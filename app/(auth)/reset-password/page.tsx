@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Input from "@/components/myui/Input";
+import MyInput from "@/components/myui/MyInput";
 import { Eye, EyeClosed } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -90,7 +90,7 @@ const ResetPasswordPage = () => {
               className=""
               onSubmit={emailForm.handleSubmit(() => setStep(2))}
             >
-              <Input
+              <MyInput
                 placeholder="Электронный адрес"
                 {...emailForm.register("email")}
                 className=""
@@ -182,7 +182,7 @@ const ResetPasswordPage = () => {
             <br />
             Введите код, чтобы подтвердить аккаунт.
           </div>
-          <Input
+          <MyInput
             placeholder="Введите код"
             {...codeForm.register("code")}
             type={showCode ? "text" : "password"}
@@ -219,7 +219,7 @@ const ResetPasswordPage = () => {
             Создайте пароль длиной не менее 8 символов, состоящий из букв, цифр
             и символов !#_+.
           </div>
-          <Input
+          <MyInput
             placeholder="Новый пароль"
             {...passwordForm.register("newPassword")}
             type={showNewPassword ? "text" : "password"}
@@ -231,7 +231,7 @@ const ResetPasswordPage = () => {
               </span>
             }
           />
-          <Input
+          <MyInput
             placeholder="Подтвердите пароль"
             {...passwordForm.register("confirmPassword")}
             type={showConfirmPassword ? "text" : "password"}

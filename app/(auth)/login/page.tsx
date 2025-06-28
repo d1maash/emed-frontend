@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "@/components/myui/MyButton";
-import Input from "@/components/myui/Input";
+import MyInput from "@/components/myui/MyInput";
 import Logo from "@/components/Logo";
 import Link from "next/link";
 import React, { useState } from "react";
@@ -45,14 +45,14 @@ const Login = () => {
         <Logo width={200} height={48} variant="blue" />
       </div>
       <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
-        <Input
+        <MyInput
           {...register("login")}
           placeholder="Логин"
           autoComplete="username"
           className="w-full"
           error={errors.login?.message}
         />
-        <Input
+        <MyInput
           {...register("password")}
           placeholder="Пароль"
           type={showPassword ? "text" : "password"}
