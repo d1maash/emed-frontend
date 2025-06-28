@@ -1,7 +1,6 @@
 "use client";
 
-import Calendar29 from "@/components/calendar-29";
-import Button from "@/components/myui/Button";
+import MyButton from "@/components/myui/MyButton";
 import Input from "@/components/myui/Input";
 import Logo from "@/components/Logo";
 import Link from "next/link";
@@ -13,6 +12,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import VerificationForm from "@/components/VerificationForm";
+import DateCalendar from "@/components/myui/DateCalendar";
 
 // Валидация
 const registerSchema = z
@@ -130,7 +130,7 @@ const Register = () => {
             name="birthDate"
             control={control}
             render={({ field }) => (
-              <Calendar29
+              <DateCalendar
                 placeholder="Дата рождения*"
                 date={field.value}
                 onDateChange={field.onChange}
@@ -235,14 +235,14 @@ const Register = () => {
           />
         </div>
 
-        <Button
+        <MyButton
           type="submit"
           className="my-4 w-full"
           size="medium"
           disabled={isSubmitting}
         >
           {isSubmitting ? "Загрузка..." : "Запросить код подтверждения"}
-        </Button>
+        </MyButton>
       </form>
     </div>
   );

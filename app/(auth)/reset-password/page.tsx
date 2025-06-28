@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Input from "@/components/myui/Input";
-import Button from "@/components/myui/Button";
 import { Eye, EyeClosed } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,6 +9,7 @@ import { z } from "zod";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { Controller } from "react-hook-form";
+import MyButton from "@/components/myui/MyButton";
 
 const emailSchema = z.object({
   email: z
@@ -96,14 +96,14 @@ const ResetPasswordPage = () => {
                 className=""
                 error={emailForm.formState.errors.email?.message}
               />
-              <Button
+              <MyButton
                 className="w-full my-4"
                 size="medium"
                 type="submit"
                 disabled={!emailForm.formState.isValid}
               >
                 Продолжить
-              </Button>
+              </MyButton>
             </form>
           ) : (
             <form onSubmit={phoneForm.handleSubmit(() => setStep(2))}>
@@ -146,14 +146,14 @@ const ResetPasswordPage = () => {
                   </span>
                 )}
               </div>
-              <Button
+              <MyButton
                 className="w-full my-4"
                 size="medium"
                 type="submit"
                 disabled={!phoneForm.formState.isValid}
               >
                 Продолжить
-              </Button>
+              </MyButton>
             </form>
           )}
           {mode === "email" ? (
@@ -194,14 +194,14 @@ const ResetPasswordPage = () => {
               </span>
             }
           />
-          <Button
+          <MyButton
             className="w-full my-4"
             size="medium"
             type="submit"
             disabled={!codeForm.formState.isValid}
           >
             Продолжить
-          </Button>
+          </MyButton>
           <div
             className="text-center text-sm text-black/80 cursor-pointer hover:underline"
             onClick={() => alert("Код отправлен повторно")}
@@ -250,14 +250,14 @@ const ResetPasswordPage = () => {
               </span>
             }
           />
-          <Button
+          <MyButton
             className="w-full my-4"
             size="medium"
             type="submit"
             disabled={!passwordForm.formState.isValid}
           >
             Продолжить
-          </Button>
+          </MyButton>
         </form>
       )}
     </div>

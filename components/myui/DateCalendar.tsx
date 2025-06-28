@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { parseDate } from "chrono-node";
 
-import { Button } from "@/components/ui/Button";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import Input from "./myui/Input";
+import Input from "./Input";
+import { Button } from "../ui/button";
 
 function formatDate(date: Date | undefined) {
   if (!date) {
@@ -31,7 +31,7 @@ interface BDCalendarProps {
   error?: string;
 }
 
-export default function Calendar29({
+export default function DateCalendar({
   placeholder,
   date,
   onDateChange,
@@ -75,7 +75,7 @@ export default function Calendar29({
             id="date-picker"
             variant="ghost"
             className={`absolute top-1/2 left-2 ${
-              error ? "-translate-y-2/3" : "-translate-y-1/2"
+              error ? "-translate-y-3/4" : "-translate-y-1/2"
             }`}
           >
             <img
