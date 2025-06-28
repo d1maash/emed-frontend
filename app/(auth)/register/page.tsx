@@ -6,7 +6,7 @@ import Input from "@/components/myui/Input";
 import Logo from "@/components/Logo";
 import Link from "next/link";
 import React, { useState } from "react";
-import { Eye, EyeClosed, EyeOff, RefreshCcw } from "lucide-react";
+import { Eye, EyeClosed, RefreshCcw } from "lucide-react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { useForm, Controller } from "react-hook-form";
