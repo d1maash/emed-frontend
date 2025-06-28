@@ -32,3 +32,18 @@ export const verifyRecaptcha = async (
 
   return response.json();
 };
+
+export const sendVerificationCode = async (data: RegistrationData) => {
+  // Сначала проверяем reCAPTCHA
+  const recaptchaResult = await verifyRecaptcha(data.recaptchaToken);
+  if (!recaptchaResult.success) {
+    throw new Error("Ошибка проверки reCAPTCHA");
+  }
+  // TODO
+  return api.post("TODO", data);
+};
+
+export const verifyCode = async (data: VerificationData) => {
+  // TODO
+  return api.post("TODO", data);
+};

@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import {
   InputOTP,
@@ -32,7 +33,7 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
   };
 
   return (
-    <div className="">
+    <div className="w-full">
       <h2 className="text-2xl font-semibold mb-4">Подтверждение</h2>
       <p className="mb-6 text-sm text-gray-700">
         Пожалуйста введите код отправленный на номер {maskedPhone}
