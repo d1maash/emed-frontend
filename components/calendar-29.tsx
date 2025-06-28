@@ -3,7 +3,7 @@
 import * as React from "react"
 import { parseDate } from "chrono-node"
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/Button"
 import { Calendar } from "@/components/ui/calendar"
 import { Label } from "@/components/ui/label"
 import {
@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import Input from "./myui/Input"
+import Input from "./myui/MyInput"
 import Image from "next/image"
 
 function formatDate(date: Date | undefined) {
@@ -35,7 +35,8 @@ interface BDCalendarProps {
 export default function Calendar29({
   placeholder,
   date,
-  onDateChange
+  onDateChange,
+  ...props
 }: BDCalendarProps) {
   const [open, setOpen] = React.useState(false)
   const [value, setValue] = React.useState("In 2 days")
@@ -63,6 +64,7 @@ export default function Calendar29({
             setOpen(true)
           }
         }}
+        {...props}
       />
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>

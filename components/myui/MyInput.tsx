@@ -24,7 +24,7 @@ export interface InputProps
     }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, variant, error, type, value, onChange, ...props }, ref) => {
+  ({ className, variant, error, type="text", value, onChange, ...props }, ref) => {
     const hasError = !!error && (!value || value === "")
 
     return (
