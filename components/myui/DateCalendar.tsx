@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { parseDate } from "chrono-node";
+import MyInput from "./MyInput";
 
 import { Button } from "@/components/ui/Button";
 import { Calendar } from "@/components/ui/calendar";
@@ -10,7 +11,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import Input from "./myui/Input";
 
 function formatDate(date: Date | undefined) {
   if (!date) {
@@ -41,19 +41,31 @@ export default function Calendar29({
   const [value, setValue] = useState("");
   const [month, setMonth] = useState<Date | undefined>(date);
 
+  const today = new Date();
+  const minDate = new Date(
+    today.getFullYear() - 120,
+    today.getMonth(),
+    today.getDate()
+  );
+  const maxDate = new Date(
+    today.getFullYear() - 18,
+    today.getMonth(),
+    today.getDate()
+  );
+
   return (
     <div
       className={`relative flex justify-center items-center ${
         error ? "border-[--error]" : ""
       }`}
     >
-      <Input
+      <MyInput
         id="date"
         value={value}
         placeholder={placeholder}
         className="w-full pl-12 pr-5"
         error={error}
-        onChange={(e) => {
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
           setValue(e.target.value);
           const date = parseDate(e.target.value);
           if (date) {
@@ -61,7 +73,7 @@ export default function Calendar29({
             setMonth(date);
           }
         }}
-        onKeyDown={(e) => {
+        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
           if (e.key === "ArrowDown") {
             e.preventDefault();
             setOpen(true);
@@ -75,7 +87,7 @@ export default function Calendar29({
             id="date-picker"
             variant="ghost"
             className={`absolute top-1/2 left-2 ${
-              error ? "-translate-y-2/3" : "-translate-y-1/2"
+              error ? "-translate-y-3/4" : "-translate-y-1/2"
             }`}
           >
             <img
