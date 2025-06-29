@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { parseDate } from "chrono-node";
 import MyInput from "./MyInput";
+
 import { Button } from "@/components/ui/Button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -12,30 +14,16 @@ import {
 import Image from "next/image";
 import { ru } from "date-fns/locale";
 
-// Форматирование в dd/mm/yyyy
-function formatDate(date: Date | undefined): string {
-  if (!date) return "";
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-}
-
-// Парсинг dd/mm/yyyy
-function parseInputDate(value: string): Date | undefined {
-  const match = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (!match) return undefined;
-  const [, d, m, y] = match;
-  const date = new Date(Number(y), Number(m) - 1, Number(d));
-  // Проверка на корректность (например, 32/13/2020 невалидно)
-  if (
-    date.getFullYear() === Number(y) &&
-    date.getMonth() === Number(m) - 1 &&
-    date.getDate() === Number(d)
-  ) {
-    return date;
+function formatDate(date: Date | undefined) {
+  if (!date) {
+    return "";
   }
-  return undefined;
+
+  return date.toLocaleDateString("ru-RU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 interface BDCalendarProps {
@@ -55,14 +43,6 @@ export default function Calendar29({
   const [value, setValue] = useState("");
   const [month, setMonth] = useState<Date | undefined>(date);
 
-  // Синхронизация value с date
-  useEffect(() => {
-    if (date) {
-      setValue(formatDate(date));
-      setMonth(date);
-    }
-  }, [date]);
-
   return (
     <div
       className={`relative flex justify-center items-center ${
@@ -72,14 +52,16 @@ export default function Calendar29({
       <MyInput
         id="date"
         value={value}
-        placeholder={placeholder || "дд/мм/гггг"}
+        placeholder={placeholder}
         className="w-full pl-12 pr-5"
         error={error}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
           setValue(e.target.value);
-          const parsed = parseInputDate(e.target.value);
-          onDateChange(parsed);
-          if (parsed) setMonth(parsed);
+          const date = parseDate(e.target.value);
+          if (date) {
+            onDateChange(date);
+            setMonth(date);
+          }
         }}
         onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
           if (e.key === "ArrowDown") {
