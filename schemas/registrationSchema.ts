@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 const iinRegex = /^\d{12}$/;
-const phoneRegex = /^\+7\d{10}$/;
+const phoneRegex =
+  /^(\+7|7)[\s\-]?(\()?[0-9]{3}(\))?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/;
 const nameRegex = /^[а-яёА-ЯЁa-zA-ZӘәҒғҚқҢңӨөҰұҮүҺһІі\s-]+$/;
 
 export const registrationSchema = z
@@ -36,7 +37,7 @@ export const registrationSchema = z
         return age >= 18 && age <= 120;
       }, "Возраст должен быть от 18 до 120 лет"),
 
-    phone: z.string().min(1, "Номер телефона обязателен"),
+    phone: z.string().regex(phoneRegex, "Неполный номер телефона"),
 
     email: z
       .string()
