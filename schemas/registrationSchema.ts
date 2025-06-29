@@ -28,15 +28,7 @@ export const registrationSchema = z
 
     iin: z.string().regex(iinRegex, "ИИН должен содержать 12 цифр"),
 
-    birthDate: z
-      .string()
-      .min(1, "Дата рождения обязательна")
-      .refine((date) => {
-        const birthDate = new Date(date);
-        const today = new Date();
-        const age = today.getFullYear() - birthDate.getFullYear();
-        return age >= 18 && age <= 120;
-      }, "Возраст должен быть от 18 до 120 лет"),
+    birthDate: z.string().min(1, "Дата рождения обязательна"),
 
     phone: z.string().regex(phoneRegex, "Неполный номер телефона"),
 

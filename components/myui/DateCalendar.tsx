@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { parseDate } from "chrono-node";
+import React, { useState, useEffect } from "react";
 import MyInput from "./MyInput";
-
 import { Button } from "@/components/ui/Button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -11,17 +9,33 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import Image from "next/image";
+import { ru } from "date-fns/locale";
 
-function formatDate(date: Date | undefined) {
-  if (!date) {
-    return "";
+// Форматирование в dd/mm/yyyy
+function formatDate(date: Date | undefined): string {
+  if (!date) return "";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+// Парсинг dd/mm/yyyy
+function parseInputDate(value: string): Date | undefined {
+  const match = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!match) return undefined;
+  const [, d, m, y] = match;
+  const date = new Date(Number(y), Number(m) - 1, Number(d));
+  // Проверка на корректность (например, 32/13/2020 невалидно)
+  if (
+    date.getFullYear() === Number(y) &&
+    date.getMonth() === Number(m) - 1 &&
+    date.getDate() === Number(d)
+  ) {
+    return date;
   }
-
-  return date.toLocaleDateString("ru-RU", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  return undefined;
 }
 
 interface BDCalendarProps {
@@ -41,37 +55,31 @@ export default function Calendar29({
   const [value, setValue] = useState("");
   const [month, setMonth] = useState<Date | undefined>(date);
 
-  const today = new Date();
-  const minDate = new Date(
-    today.getFullYear() - 120,
-    today.getMonth(),
-    today.getDate()
-  );
-  const maxDate = new Date(
-    today.getFullYear() - 18,
-    today.getMonth(),
-    today.getDate()
-  );
+  // Синхронизация value с date
+  useEffect(() => {
+    if (date) {
+      setValue(formatDate(date));
+      setMonth(date);
+    }
+  }, [date]);
 
   return (
     <div
       className={`relative flex justify-center items-center ${
-        error ? "border-[--error]" : ""
+        !!error ? "border-[--error]" : ""
       }`}
     >
       <MyInput
         id="date"
         value={value}
-        placeholder={placeholder}
+        placeholder={placeholder || "дд/мм/гггг"}
         className="w-full pl-12 pr-5"
         error={error}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
           setValue(e.target.value);
-          const date = parseDate(e.target.value);
-          if (date) {
-            onDateChange(date);
-            setMonth(date);
-          }
+          const parsed = parseInputDate(e.target.value);
+          onDateChange(parsed);
+          if (parsed) setMonth(parsed);
         }}
         onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
           if (e.key === "ArrowDown") {
@@ -87,13 +95,15 @@ export default function Calendar29({
             id="date-picker"
             variant="ghost"
             className={`absolute top-1/2 left-2 ${
-              error ? "-translate-y-3/4" : "-translate-y-1/2"
+              !!error ? "-translate-y-3/4" : "-translate-y-1/2"
             }`}
           >
-            <img
+            <Image
               alt="calendar"
               src="/icons/solar--calendar-linear.svg"
               className="h-5 w-5 opacity-70"
+              width={20}
+              height={20}
             />
             <span className="sr-only">Выберите дату</span>
           </Button>
@@ -110,6 +120,7 @@ export default function Calendar29({
               setValue(formatDate(date));
               setOpen(false);
             }}
+            locale={ru}
           />
         </PopoverContent>
       </Popover>

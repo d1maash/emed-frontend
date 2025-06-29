@@ -108,7 +108,7 @@ export const RegistrationForm: React.FC = () => {
 
   return (
     <form
-      className="flex-1 h-full max-h-full overflow-y-auto flex flex-col gap-4 px-1 sm:px-0 mt-2 scrollbar-none"
+      className="flex-1 h-full max-h-full overflow-y-auto flex flex-col gap-4 px-1 sm:px-0 mt-2 scrollbar-none pb-4 md:pb-12"
       onSubmit={handleSubmit(onSubmitDev)}
     >
       <div>
