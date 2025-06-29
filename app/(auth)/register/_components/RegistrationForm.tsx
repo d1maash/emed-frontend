@@ -1,4 +1,3 @@
-// src/components/register/RegistrationForm.tsx
 "use client";
 
 import React, { useRef, useState } from "react";
@@ -212,8 +211,8 @@ export const RegistrationForm: React.FC = () => {
         <MyInput
           {...register("password")}
           placeholder="Пароль"
-          variant="outline"
           type={showPass1 ? "text" : "password"}
+          error={errors.password?.message}
           rightIcon={
             <span onClick={() => setShowPass1((v) => !v)} tabIndex={-1}>
               {showPass1 ? <EyeClosed size={20} /> : <Eye size={20} />}
@@ -227,7 +226,6 @@ export const RegistrationForm: React.FC = () => {
         type={showPass2 ? "text" : "password"}
         error={errors.confirmPassword?.message}
         placeholder="Повторите пароль"
-        variant="outline"
         rightIcon={
           <span onClick={() => setShowPass2((v) => !v)} tabIndex={-1}>
             {showPass2 ? <EyeClosed size={20} /> : <Eye size={20} />}
