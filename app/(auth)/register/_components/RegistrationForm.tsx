@@ -26,6 +26,13 @@ import PhoneInput from "react-phone-input-2";
 import { Eye, EyeClosed } from "lucide-react";
 import "react-phone-input-2/lib/style.css";
 
+function parseYYYYMMDD(str: string): Date | undefined {
+  if (!str) return undefined;
+  const m = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return undefined;
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
 export const RegistrationForm: React.FC = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -149,9 +156,19 @@ export const RegistrationForm: React.FC = () => {
         render={({ field }) => (
           <DateCalendar
             placeholder="Выберите дату рождения"
-            date={field.value ? new Date(field.value) : undefined}
+            date={parseYYYYMMDD(field.value)}
             onDateChange={(date) => {
-              field.onChange(date ? date.toISOString().split("T")[0] : "");
+              // сохраняйте только YYYY-MM-DD (локально)
+              field.onChange(
+                date
+                  ? `${date.getFullYear()}-${String(
+                      date.getMonth() + 1
+                    ).padStart(2, "0")}-${String(date.getDate()).padStart(
+                      2,
+                      "0"
+                    )}`
+                  : ""
+              );
             }}
             error={errors.birthDate?.message}
           />
