@@ -1,8 +1,9 @@
 // AdminPanelPage.tsx
 import React from "react";
-import AdminInfoCard from "./_components/AdminInfoCard";
+import AdminInfoCards from "./_components/AdminInfoCards";
+import AdminAlertTable from "./_components/admin-alert-table/AdminAlertTable";
 
-const adminCardTemplateInfo = [
+const mainStatsTemplate = [
   {
     title: "Число пользователей",
     text: "11.8M",
@@ -30,15 +31,17 @@ const adminCardTemplateInfo = [
   },
 ];
 
+const alertTableTemplate = [];
+
 const AdminPanelPage = () => {
   return (
-    <div className="w-full">
-      <div className="flex gap-6 overflow-x-auto pb-2">
-        {adminCardTemplateInfo.map((card) => (
-          <AdminInfoCard key={card.title} {...card} />
-        ))}
+    <div className="w-full flex flex-col">
+      <AdminInfoCards cards={mainStatsTemplate} />
+      <div className="w-full mt-12 flex flex-col lg:grid lg:grid-cols-5 gap-2 md:gap-4 lg:gap-6 overflow-auto">
+        <AdminAlertTable />
+        {/* AdminNotifications */}
+        <div className="w-full lg:w-auto lg:col-span-2 rounded-xl border py-10"></div>
       </div>
-      <div className="mt-10">check</div>
     </div>
   );
 };
