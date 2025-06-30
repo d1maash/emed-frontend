@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { parseDate } from "chrono-node";
-import MyInput from "./MyInput";
 
 import { Button } from "@/components/ui/Button";
 import { Calendar } from "@/components/ui/calendar";
@@ -13,6 +11,7 @@ import {
 } from "@/components/ui/popover";
 import Image from "next/image";
 import { ru } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 function formatDate(date: Date | undefined) {
   if (!date) {
@@ -41,44 +40,19 @@ export default function Calendar29({
 }: BDCalendarProps) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
-  const [month, setMonth] = useState<Date | undefined>(date);
 
   return (
-    <div
-      className={`relative flex justify-center items-center ${
-        !!error ? "border-[--error]" : ""
-      }`}
-    >
-      <MyInput
-        id="date"
-        value={value}
-        placeholder={placeholder}
-        className="w-full pl-12 pr-5"
-        error={error}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-          setValue(e.target.value);
-          const date = parseDate(e.target.value);
-          if (date) {
-            onDateChange(date);
-            setMonth(date);
-          }
-        }}
-        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-          if (e.key === "ArrowDown") {
-            e.preventDefault();
-            setOpen(true);
-          }
-        }}
-      />
+    <div className={`relative flex justify-center items-start flex-col`}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
-            size="icon"
             id="date-picker"
             variant="ghost"
-            className={`absolute top-1/2 left-2 ${
-              !!error ? "-translate-y-3/4" : "-translate-y-1/2"
-            }`}
+            className={cn(
+              "w-full flex justify-start border min-w-[200px] min-h-[40px] px-4 py-2 rounded-[10px] text-[--coolgray-60] text-base font-normal",
+              !!value && "text-black",
+              !!error && "border-[--error]"
+            )}
           >
             <Image
               alt="calendar"
@@ -87,7 +61,7 @@ export default function Calendar29({
               width={20}
               height={20}
             />
-            <span className="sr-only">Выберите дату</span>
+            {!!value ? value : !!placeholder ? placeholder : "Выберите дату"}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto overflow-hidden p-0" align="end">
@@ -95,8 +69,6 @@ export default function Calendar29({
             mode="single"
             selected={date}
             captionLayout="dropdown"
-            month={month}
-            onMonthChange={setMonth}
             onSelect={(date) => {
               onDateChange(date);
               setValue(formatDate(date));
@@ -106,6 +78,7 @@ export default function Calendar29({
           />
         </PopoverContent>
       </Popover>
+      {!!error && <p className="text-[--error] text-xs mt-1">{error}</p>}
     </div>
   );
 }
