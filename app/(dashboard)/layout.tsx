@@ -71,7 +71,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       </div>
 
       {/* Main content */}
-      <div className="flex flex-col flex-1 bg-[#f9faff] md:rounded-s-2xl p-4 md:p-14 gap-7 md:gap-14 overflow-auto">
+      <div className="flex flex-col flex-1 bg-[#f9faff] md:rounded-s-2xl p-4 lg:p-14 gap-4 lg:gap-14 overflow-auto">
         <DashboardHeader>
           <div className="flex">Header info</div>
         </DashboardHeader>

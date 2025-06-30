@@ -12,6 +12,7 @@ import {
 import { columns } from "./columns";
 import { alertRows } from "./data";
 import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const AdminAlertTable = () => {
   const [rowSelection, setRowSelection] = useState({});
@@ -30,50 +31,55 @@ const AdminAlertTable = () => {
   });
 
   return (
-    <div className="w-full lg:col-span-3 rounded-xl border p-10 overflow-x-auto bg-white">
+    <div className="w-full flex flex-col justify-start xl:col-span-3 rounded-xl border px-6 py-8 md:p-10 overflow-auto bg-white xl:h-[820px]">
       <div className="flex items-center justify-between">
         <h4 className="text-2xl font-bold">Тревога</h4>
         <AlertCircle size={24} />
       </div>
-      <table className="w-full text-sm mt-8">
-        <thead className="border-y bg-[#F7F7F8]">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  className="py-2 px-3 font-medium text-left whitespace-nowrap"
-                  style={{ width: header.getSize() }}
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <tr key={row.id} className="border-b hover:bg-[#F7F7F8] transition">
-              {row.getVisibleCells().map((cell) => (
-                <td
-                  key={cell.id}
-                  className="py-2 px-3 align-middle whitespace-nowrap"
-                  style={{ width: cell.column.getSize() }}
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm mt-8">
+          <thead className="border-y bg-[#F7F7F8]">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    className="py-2 px-3 font-medium text-left whitespace-nowrap"
+                    style={{ width: header.getSize() }}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map((row) => (
+              <tr
+                key={row.id}
+                className="border-b hover:bg-[#F7F7F8] transition"
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <td
+                    key={cell.id}
+                    className="py-2 px-3 align-middle whitespace-nowrap"
+                    style={{ width: cell.column.getSize() }}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {/* Pagination */}
-      <div className="flex justify-center items-center gap-2 mt-6 select-none">
+      <div className="mt-8 xl:mt-auto flex justify-center items-center gap-2 select-none">
         <button
           className="w-8 h-8 flex items-center justify-center bg-white text-[--primary-90] disabled:text-[#6B7280] disabled:opacity-50"
           onClick={() => table.previousPage()}
@@ -84,11 +90,12 @@ const AdminAlertTable = () => {
         {Array.from({ length: table.getPageCount() }, (_, i) => (
           <button
             key={i}
-            className={`w-8 h-8 flex items-center justify-center text-[--primary-90] ${
+            className={cn(
+              "w-8 h-8 flex items-center justify-center text-[--primary-90]",
               table.getState().pagination.pageIndex === i
-                ? "bg-[--primary-30] "
+                ? "bg-[--primary-30]"
                 : "bg-white"
-            }`}
+            )}
             onClick={() => table.setPageIndex(i)}
           >
             {i + 1}
