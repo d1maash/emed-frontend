@@ -3,7 +3,7 @@ import React from "react";
 
 const DashboardHeader = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="pl-12 md:pl-0 flex items-center justify-start">
+    <div className="pl-12 md:pl-0 flex w-full items-center justify-start">
       {children}
       <div className="ml-auto flex justify-end items-center gap-3">
         <Bell />
