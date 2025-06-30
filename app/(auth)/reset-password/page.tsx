@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import MyInput from "@/components/myui/MyInput";
-import { Eye, EyeClosed } from "lucide-react";
+import { ArrowLeft, Eye, EyeClosed } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,6 +10,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { Controller } from "react-hook-form";
 import MyButton from "@/components/myui/MyButton";
+import { useRouter } from "next/navigation";
 
 const emailSchema = z.object({
   email: z
@@ -37,6 +38,8 @@ const passwordSchema = z
   });
 
 const ResetPasswordPage = () => {
+  const router = useRouter();
+
   const [step, setStep] = useState(1);
   const [mode, setMode] = useState<"email" | "phone">("email");
   const [showCode, setShowCode] = useState(false);
@@ -171,6 +174,21 @@ const ResetPasswordPage = () => {
               Искать по электронному адресу
             </div>
           )}
+
+          <div className="mt-6 flex justify-center">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="flex text-center text-sm text-gray-600 hover:text-gray-800 hover:underline relative"
+            >
+              <ArrowLeft
+                size={20}
+                strokeWidth={1}
+                className="absolute -left-6"
+              />{" "}
+              Отмена
+            </button>
+          </div>
         </>
       )}
       {step === 2 && (

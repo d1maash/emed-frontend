@@ -29,7 +29,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     { className, variant, error, type, value, onChange, rightIcon, ...props },
     ref
   ) => {
-    const hasError = !!error && (!value || value === "");
+    const hasError = !!error;
 
     return (
       <div className="w-full">

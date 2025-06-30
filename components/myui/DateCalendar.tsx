@@ -11,6 +11,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import Image from "next/image";
+import { ru } from "date-fns/locale";
 
 function formatDate(date: Date | undefined) {
   if (!date) {
@@ -41,22 +43,10 @@ export default function Calendar29({
   const [value, setValue] = useState("");
   const [month, setMonth] = useState<Date | undefined>(date);
 
-  const today = new Date();
-  const minDate = new Date(
-    today.getFullYear() - 120,
-    today.getMonth(),
-    today.getDate()
-  );
-  const maxDate = new Date(
-    today.getFullYear() - 18,
-    today.getMonth(),
-    today.getDate()
-  );
-
   return (
     <div
       className={`relative flex justify-center items-center ${
-        error ? "border-[--error]" : ""
+        !!error ? "border-[--error]" : ""
       }`}
     >
       <MyInput
@@ -87,13 +77,15 @@ export default function Calendar29({
             id="date-picker"
             variant="ghost"
             className={`absolute top-1/2 left-2 ${
-              error ? "-translate-y-3/4" : "-translate-y-1/2"
+              !!error ? "-translate-y-3/4" : "-translate-y-1/2"
             }`}
           >
-            <img
+            <Image
               alt="calendar"
               src="/icons/solar--calendar-linear.svg"
               className="h-5 w-5 opacity-70"
+              width={20}
+              height={20}
             />
             <span className="sr-only">Выберите дату</span>
           </Button>
@@ -110,6 +102,7 @@ export default function Calendar29({
               setValue(formatDate(date));
               setOpen(false);
             }}
+            locale={ru}
           />
         </PopoverContent>
       </Popover>

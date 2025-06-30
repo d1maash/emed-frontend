@@ -7,6 +7,7 @@ import { verifyPhoneCode, clearError } from "@/store/slices/registrationSlice";
 import { RootState, AppDispatch } from "@/store";
 import VerificationForm from "@/components/VerificationForm";
 import { maskPhoneNumber } from "@/utils/phoneUtils";
+import { ArrowLeft } from "lucide-react";
 
 export default function VerifyCodePage() {
   const router = useRouter();
@@ -68,14 +69,15 @@ export default function VerifyCodePage() {
           onResend={handleResend}
         />
 
-        <div className="mt-6 flex justify-between">
+        <div className="mt-6 flex justify-center">
           <button
             type="button"
             onClick={() => router.back()}
-            className="text-sm text-gray-600 hover:text-gray-800 hover:underline"
+            className="flex text-center text-sm text-gray-600 hover:text-gray-800 hover:underline relative"
             disabled={isLoading}
           >
-            ← Вернуться к регистрации
+            <ArrowLeft size={20} strokeWidth={1} className="absolute -left-6" />{" "}
+            Вернуться к регистрации
           </button>
         </div>
       </div>
