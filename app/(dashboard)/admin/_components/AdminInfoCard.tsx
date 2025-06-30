@@ -1,4 +1,4 @@
-import { Label } from "@/components/ui/label";
+// AdminInfoCard.tsx
 import { cn } from "@/lib/utils";
 import React from "react";
 
@@ -14,7 +14,7 @@ const AdminInfoCard: React.FC<AdminInfoCardProps> = ({
   change,
 }) => {
   return (
-    <div className="flex flex-col p-4 pb-9 h-24 w-56 md:w-64 border bg-white">
+    <div className="flex flex-col p-4 pb-9 h-24 min-w-[256px] flex-shrink-0 border bg-white ">
       <div className="text-base text-muted-foreground font-medium whitespace-nowrap">
         {title}
       </div>
@@ -23,7 +23,7 @@ const AdminInfoCard: React.FC<AdminInfoCardProps> = ({
         <div
           className={cn(
             "py-[3px] px-3 text-sm rounded-full",
-            change < 0 ? "bg-[#4f9cda] text-white" : "bg-[#b3d1ff]"
+            change < 0 ? "bg-[--primary-60] text-white" : "bg-[--primary-30]"
           )}
         >
           {change > 0 && "+"}

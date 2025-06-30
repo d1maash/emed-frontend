@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Montserrat  } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ReduxProvider } from "@/components/providers/ReduxProvider";
@@ -18,12 +18,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body 
-      className={cn(`${montserrat.className}`, "h-full overflow-y-auto w-full")}
-      >
-        <ReduxProvider>
-        {children}
-        </ReduxProvider>
+      <body className={cn(`${montserrat.className}`, "h-full w-full")}>
+        <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>
   );

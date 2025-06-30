@@ -41,7 +41,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex bg-[--primary-90]">
+    <div className="h-screen w-full flex bg-[--primary-90]">
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <Sidebar routes={routes} />
@@ -71,7 +71,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       </div>
 
       {/* Main content */}
-      <div className="flex w-full flex-col flex-1 bg-[#f9faff] md:rounded-s-2xl p-4 md:p-14 gap-7 md:gap-14">
+      <div className="flex flex-col flex-1 bg-[#f9faff] md:rounded-s-2xl p-4 md:p-14 gap-7 md:gap-14 overflow-auto">
         <DashboardHeader>
           <div className="flex">Header info</div>
         </DashboardHeader>

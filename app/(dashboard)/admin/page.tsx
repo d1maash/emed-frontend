@@ -1,3 +1,4 @@
+// AdminPanelPage.tsx
 import React from "react";
 import AdminInfoCard from "./_components/AdminInfoCard";
 
@@ -30,15 +31,14 @@ const adminCardTemplateInfo = [
 ];
 
 const AdminPanelPage = () => {
-  const adminCards = adminCardTemplateInfo;
-
   return (
     <div className="w-full">
-      <div className="flex flex-row w-full overflow-y-auto gap-6">
-        {adminCards.map((card) => (
+      <div className="flex gap-6 overflow-x-auto pb-2">
+        {adminCardTemplateInfo.map((card) => (
           <AdminInfoCard key={card.title} {...card} />
         ))}
       </div>
+      <div className="mt-10">check</div>
     </div>
   );
 };
