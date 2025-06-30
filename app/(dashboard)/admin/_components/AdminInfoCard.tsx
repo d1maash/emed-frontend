@@ -2,7 +2,7 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 
-interface AdminInfoCardProps {
+export interface AdminInfoCardProps {
   title: string;
   text: string;
   change: number;
