@@ -186,7 +186,7 @@ const AdminNotificationsCard = () => {
           <TabsTrigger
             value="all"
             className={cn(
-              "w-full  flex-1 rounded-md px-4 py-1 sm:py-0.5 text-base transition",
+              "w-full  flex-1 rounded-md px-4 py-1 sm:py-0.5 text-sm transition",
               tab === "all"
                 ? "bg-white text-black"
                 : "bg-transparent text-white"
@@ -197,7 +197,7 @@ const AdminNotificationsCard = () => {
           <TabsTrigger
             value="unread"
             className={cn(
-              "w-full flex-1 rounded-md px-4 py-1 sm:py-0.5 text-base transition",
+              "w-full flex-1 rounded-md px-4 py-1 sm:py-0.5 text-sm transition",
               tab === "unread"
                 ? "bg-white text-black"
                 : "bg-transparent text-white"
@@ -208,7 +208,7 @@ const AdminNotificationsCard = () => {
           <TabsTrigger
             value="important"
             className={cn(
-              "w-full flex-1 rounded-md px-4 py-1 sm:py-0.5 text-base transition",
+              "w-full flex-1 rounded-md px-4 py-1 sm:py-0.5 text-sm transition",
               tab === "important"
                 ? "bg-white text-black"
                 : "bg-transparent text-white"

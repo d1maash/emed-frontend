@@ -3,15 +3,7 @@ import { ArrowDown, ArrowUp, MoreHorizontal, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ColumnDef } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
-
-export interface AlertRow {
-  id: string;
-  name: string;
-  role: string;
-  alert: string;
-  status: "В процессе" | "Важно" | "Устранено";
-  checked: boolean;
-}
+import { AlertRow } from "./types";
 
 export const columns: ColumnDef<AlertRow>[] = [
   {
