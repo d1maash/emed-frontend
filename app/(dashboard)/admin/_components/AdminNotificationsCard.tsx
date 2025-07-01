@@ -178,11 +178,11 @@ const AdminNotificationsCard = () => {
         <Bell size={24} />
       </div>
       <Tabs value={tab} onValueChange={setTab} className="w-full mt-8">
-        <TabsList className="flex flex-col gap-2 px-2 py-2 sm:gap-2 sm:flex-row sm:w-full bg-[--primary-60] rounded-lg lg:gap-2 h-max">
+        <TabsList className="flex flex-col gap-2 px-2 py-2 xs:flex-row bg-[--primary-60] rounded-lg lg:gap-2 h-max">
           <TabsTrigger
             value="all"
             className={cn(
-              "w-full sm:w-auto flex-1 rounded-md px-4 py-1 sm:py-0.5 text-base transition",
+              "w-full  flex-1 rounded-md px-4 py-1 sm:py-0.5 text-base transition",
               tab === "all"
                 ? "bg-white text-black"
                 : "bg-transparent text-white"
@@ -193,7 +193,7 @@ const AdminNotificationsCard = () => {
           <TabsTrigger
             value="unread"
             className={cn(
-              "w-full sm:w-auto flex-1 rounded-md px-4 py-1 sm:py-0.5 text-base transition",
+              "w-full flex-1 rounded-md px-4 py-1 sm:py-0.5 text-base transition",
               tab === "unread"
                 ? "bg-white text-black"
                 : "bg-transparent text-white"
@@ -204,7 +204,7 @@ const AdminNotificationsCard = () => {
           <TabsTrigger
             value="important"
             className={cn(
-              "w-full sm:w-auto flex-1 rounded-md px-4 py-1 sm:py-0.5 text-base transition",
+              "w-full flex-1 rounded-md px-4 py-1 sm:py-0.5 text-base transition",
               tab === "important"
                 ? "bg-white text-black"
                 : "bg-transparent text-white"
@@ -226,24 +226,26 @@ const AdminNotificationsCard = () => {
                 <span
                   className={cn(
                     "mt-2 mr-2 block h-2 w-2 rounded-full",
-                    n.unread ? "bg-[#3A7DFF]" : "bg-transparent"
+                    n.unread ? "bg-[--primary-90]" : "bg-transparent"
                   )}
                 />
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <span
                       className={cn(
-                        "font-semibold",
-                        n.unread && "text-[#3A7DFF]"
+                        "font-semibold line-clamp-1",
+                        n.unread && "text-[--primary-90]"
                       )}
                     >
                       {n.title}
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-400 line-clamp-1">
                       {formatDate(n.date)}
                     </span>
                   </div>
-                  <div className="text-gray-500 text-sm mt-1">{n.labels}</div>
+                  <div className="text-gray-500 text-sm mt-1 line-clamp-2">
+                    {n.labels}
+                  </div>
                 </div>
               </div>
             ))}
