@@ -44,7 +44,7 @@ const AdminAlertTable = () => {
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="py-2 px-3 font-medium text-left whitespace-nowrap"
+                    className="py-2.5 px-3 font-medium text-left whitespace-nowrap"
                     style={{ width: header.getSize() }}
                   >
                     {header.isPlaceholder
