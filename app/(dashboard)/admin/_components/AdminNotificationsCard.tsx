@@ -177,8 +177,12 @@ const AdminNotificationsCard = () => {
         <h4 className="text-2xl font-bold">Уведомления</h4>
         <Bell size={24} />
       </div>
-      <Tabs value={tab} onValueChange={setTab} className="w-full mt-8">
-        <TabsList className="flex flex-col gap-2 px-2 py-2 xs:flex-row bg-[--primary-60] rounded-lg lg:gap-2 h-max">
+      <Tabs
+        value={tab}
+        onValueChange={setTab}
+        className="w-full mt-8 @container"
+      >
+        <TabsList className="w-full flex flex-col gap-2 px-2 py-2 @[360px]:flex-row bg-[--primary-60] rounded-lg lg:gap-2 h-max">
           <TabsTrigger
             value="all"
             className={cn(

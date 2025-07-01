@@ -6,7 +6,7 @@ interface AdminInfoCardsProps {
 }
 const AdminInfoCards: React.FC<AdminInfoCardsProps> = ({ cards }) => {
   return (
-    <div className="flex gap-6 overflow-x-auto pb-2">
+    <div className="flex min-h-max gap-6 overflow-x-auto">
       {cards.map((card) => (
         <AdminInfoCard key={card.title} {...card} />
       ))}
