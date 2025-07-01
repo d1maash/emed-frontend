@@ -50,11 +50,11 @@ const AdminPanelPage = () => {
         direction={isWide ? "horizontal" : "vertical"}
         className="w-full min-h-max mt-12 flex flex-col md:flex-row gap-2 md:gap-4 xl:gap-6 overflow-auto"
       >
-        <ResizablePanel className="min-h-max">
+        <ResizablePanel className="min-h-max" defaultSize={60}>
           <AdminAlertTable />
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel className="min-h-max">
+        <ResizablePanel className="min-h-max" defaultSize={40}>
           <AdminNotificationsCard />
         </ResizablePanel>
       </ResizablePanelGroup>
