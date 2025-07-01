@@ -18,7 +18,7 @@ const SidebarRoute: React.FC<SidebarRouteProps> = ({ text, link, onClick }) => {
   return (
     <div
       className={cn(
-        "flex justify-start items-center p-2 w-full rounded-xl text-white text-lg font-medium",
+        "flex justify-start items-center p-2 w-full rounded-xl text-white text-base font-medium",
         !!active && "bg-white text-black"
       )}
       onClick={onClick}

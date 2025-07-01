@@ -1,4 +1,4 @@
-import { AlertRow } from "./columns";
+import { AlertRow } from "./types";
 
 export const alertRows: AlertRow[] = [
   {
