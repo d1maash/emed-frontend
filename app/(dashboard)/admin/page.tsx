@@ -1,8 +1,16 @@
 // AdminPanelPage.tsx
+"use client";
+
 import React from "react";
 import AdminInfoCards from "./_components/AdminInfoCards";
 import AdminAlertTable from "./_components/admin-alert-table/AdminAlertTable";
 import AdminNotificationsCard from "./_components/AdminNotificationsCard";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { useContainerWidth } from "@/app/hooks/useContainerWidth";
 
 const mainStatsTemplate = [
   {
@@ -33,13 +41,23 @@ const mainStatsTemplate = [
 ];
 
 const AdminPanelPage = () => {
+  const { ref, isWide } = useContainerWidth(768);
+
   return (
-    <div className="w-full flex flex-col">
+    <div ref={ref} className="w-full flex flex-col">
       <AdminInfoCards cards={mainStatsTemplate} />
-      <div className="w-full mt-12 flex flex-col xl:grid lg:grid-cols-5 gap-2 md:gap-4 xl:gap-6 overflow-auto">
-        <AdminAlertTable />
-        <AdminNotificationsCard />
-      </div>
+      <ResizablePanelGroup
+        direction={isWide ? "horizontal" : "vertical"}
+        className="w-full min-h-max mt-12 flex flex-col md:flex-row gap-2 md:gap-4 xl:gap-6 overflow-auto"
+      >
+        <ResizablePanel className="min-h-max">
+          <AdminAlertTable />
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel className="min-h-max">
+          <AdminNotificationsCard />
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };

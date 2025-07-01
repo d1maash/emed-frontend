@@ -64,9 +64,6 @@ const config: Config = {
       screens: {
         xs: "480px",
       },
-      containers: {
-        xs: "340px",
-      },
     },
   },
   plugins: [
