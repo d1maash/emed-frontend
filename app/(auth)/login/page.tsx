@@ -1,22 +1,15 @@
 "use client";
 
-import Button from "@/components/myui/MyButton";
+import MyButton from "@/components/myui/MyButton";
 import MyInput from "@/components/myui/MyInput";
 import Logo from "@/components/Logo";
 import Link from "next/link";
 import React, { useState } from "react";
-import { Eye, EyeClosed, EyeOff } from "lucide-react";
+import { Eye, EyeClosed } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-
-// Валидация
-const loginSchema = z.object({
-  login: z.string().min(1, "Логин обязателен"),
-  password: z.string().min(1, "Пароль обязателен"),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+import { LoginFormData, loginSchema } from "@/schemas/loginSchema";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +22,7 @@ const Login = () => {
     resolver: zodResolver(loginSchema),
     mode: "onChange",
     defaultValues: {
-      login: "",
+      iin: "",
       password: "",
     },
   });
@@ -46,11 +39,11 @@ const Login = () => {
       </div>
       <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
         <MyInput
-          {...register("login")}
-          placeholder="Логин"
-          autoComplete="username"
+          {...register("iin")}
+          placeholder="ИИН"
+          autoComplete="iin"
           className="w-full"
-          error={errors.login?.message}
+          error={errors.iin?.message}
         />
         <MyInput
           {...register("password")}
@@ -65,21 +58,27 @@ const Login = () => {
             </span>
           }
         />
-        <Button
+        <MyButton
           type="submit"
           className="mt-2 w-full"
-          size="medium"
+          size="small"
           disabled={isSubmitting}
         >
           {isSubmitting ? "Вход..." : "Войти"}
-        </Button>
+        </MyButton>
+        <MyButton
+          type="button"
+          className=" w-full"
+          size="small"
+          variant={"outline"}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Вход..." : "Войти по ЭЦП"}
+        </MyButton>
       </form>
-      <div className="flex justify-between mt-4 text-xs text-gray-500">
+      <div className="flex justify-start mt-4 text-xs text-gray-500">
         <Link href="/reset-password" className="hover:underline">
           Забыли пароль?
-        </Link>
-        <Link href="/register" className="hover:underline">
-          Зарегистрироваться
         </Link>
       </div>
     </>

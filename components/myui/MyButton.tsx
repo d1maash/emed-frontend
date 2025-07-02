@@ -8,8 +8,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         filled: "bg-[--primary-60] text-white hover:bg-[--primary-90]",
-        outline:
-          "border border-(--primary-60) text-(--primary-60) hover:bg-(--primary-30)",
+        outline: "border hover:bg-[--primary-30]",
         danger: "bg-[--error] text-white hover:bg-[color:(var(--error)]/70",
         disabled: "bg-[--coolgray/30] text-white cursor-not-allowed",
         link: "text-[--primary-60] hover:text-(--primary-90)",
