@@ -1,4 +1,4 @@
-import SidebarRoute from "@/components/SidebarRoute";
+import SidebarRoute from "@/components/Sidebar/SidebarRoute";
 
 export default function Home() {
   return (
