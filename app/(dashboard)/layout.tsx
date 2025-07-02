@@ -2,33 +2,17 @@
 
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
-import Sidebar from "@/components/Sidebar";
-import { SidebarRouteProps } from "@/components/SidebarRoute";
+import Sidebar from "@/components/Sidebar/Sidebar";
 import { Button } from "@/components/ui/Button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import DashboardHeader from "@/components/Header";
-
-const adminRoutes: SidebarRouteProps[] = [
-  { text: "Панель администратора", link: "/admin" },
-  { text: "Пользователи", link: "/admin/users" },
-  { text: "Настройки системы", link: "/admin/system" },
-  { text: "Отчеты и статистика", link: "/admin/stats" },
-];
-
-const commissionRoutes: SidebarRouteProps[] = [
-  { text: "Дэшборд", link: "/commission" },
-  { text: "Дело призывника", link: "/commission" },
-  { text: "Протоколы и история", link: "/commission" },
-];
-
-const coordinatorRoutes: SidebarRouteProps[] = [
-  { text: "Личный кабинет", link: "/coordinator" },
-  { text: "Список призывников", link: "/coordinator" },
-  { text: "График приемов", link: "/coordinator" },
-  { text: "Кадровые данные", link: "/coordinator" },
-  { text: "Отчеты и статистика", link: "/coordinator" },
-];
+import {
+  adminRoutes,
+  commissionRoutes,
+  coordinatorRoutes,
+  doctorRoutes,
+} from "@/components/Sidebar/routes";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -36,8 +20,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     ? adminRoutes
     : pathname.includes("commission")
     ? commissionRoutes
-    : coordinatorRoutes;
-
+    : pathname.includes("coordinator")
+    ? coordinatorRoutes
+    : doctorRoutes;
   const [open, setOpen] = useState(false);
 
   return (

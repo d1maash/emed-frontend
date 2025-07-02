@@ -1,7 +1,7 @@
 import React from "react";
-import Logo from "./Logo";
-import Link from "next/link";
-import SidebarRoute, { SidebarRouteProps } from "./SidebarRoute";
+import Logo from "../Logo";
+import SidebarRoute from "./SidebarRoute";
+import { SidebarRouteProps } from "./routes";
 
 interface SidebarProps {
   routes: SidebarRouteProps[];

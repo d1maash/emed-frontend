@@ -4,12 +4,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-
-export interface SidebarRouteProps {
-  text: string;
-  link: string;
-  onClick?: () => void;
-}
+import { SidebarRouteProps } from "./routes";
 
 const SidebarRoute: React.FC<SidebarRouteProps> = ({ text, link, onClick }) => {
   const pathname = usePathname();
