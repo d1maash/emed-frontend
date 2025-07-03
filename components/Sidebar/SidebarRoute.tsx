@@ -8,7 +8,8 @@ import { SidebarRouteProps } from "./routes";
 
 const SidebarRoute: React.FC<SidebarRouteProps> = ({ text, link, onClick }) => {
   const pathname = usePathname();
-  const active = pathname.endsWith(link) ? true : false;
+  const active =
+    pathname === link || (link !== "/admin" && pathname.startsWith(link + "/"));
 
   return (
     <div
