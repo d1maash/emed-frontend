@@ -22,11 +22,22 @@ export interface InputProps
     VariantProps<typeof inputVariants> {
   error?: string;
   rightIcon?: React.ReactNode;
+  leftIcon?: React.ReactNode;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
-    { className, variant, error, type, value, onChange, rightIcon, ...props },
+    {
+      className,
+      variant,
+      error,
+      type,
+      value,
+      onChange,
+      rightIcon,
+      leftIcon,
+      ...props
+    },
     ref
   ) => {
     const hasError = !!error;
@@ -51,6 +62,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {rightIcon && (
             <span className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer select-none">
               {rightIcon}
+            </span>
+          )}
+          {leftIcon && (
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 cursor-pointer select-none">
+              {leftIcon}
             </span>
           )}
         </div>
