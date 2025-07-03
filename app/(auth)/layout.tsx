@@ -10,8 +10,6 @@ const AuthLayout = ({
   children: React.ReactNode;
 }>) => {
   const pathname = usePathname();
-  const cardHeight = pathname.includes("register") ? "h-[600px]" : "h-auto";
-  const verticalPadding = pathname.includes("register") ? "pt-16 " : "py-16";
   const decorationBg = pathname.includes("/reset-password")
     ? "/illustrations/reset-pwd-decoration.svg"
     : "/illustrations/login-decoration.svg";
@@ -28,9 +26,7 @@ const AuthLayout = ({
         />
       </div>
       <div className="flex-1 flex justify-center items-center px-2 sm:px-8 py-8">
-        <div
-          className={`bg-white rounded-3xl shadow-lg px-4 sm:px-16 ${verticalPadding} min-w-0 w-full ${cardHeight} max-w-[420px] md:max-w-[480px] lg:max-w-[520px] overflow-hidden`}
-        >
+        <div className="bg-white rounded-3xl shadow-lg px-4 sm:px-16 py-16 min-w-0 w-full h-auto max-w-[420px] md:max-w-[480px] lg:max-w-[520px] overflow-hidden">
           {children}
         </div>
       </div>
