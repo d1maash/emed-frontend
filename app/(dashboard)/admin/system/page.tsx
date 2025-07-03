@@ -2,6 +2,7 @@
 import { NavTab, NavTabs } from "@/components/NavTabs";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import ReferenceDataPage from "./_components/ReferenceDataPage";
 
 const pages = [
   "Справочные данные",
@@ -29,6 +30,7 @@ const AdminSystemPage = () => {
           />
         ))}
       </NavTabs>
+      <ReferenceDataPage />
     </div>
   );
 };

@@ -15,7 +15,7 @@ interface NavTabsProps {
 }
 
 interface NavTabProps {
-  page: string;
+  page?: string;
   active?: boolean;
   onClick: () => void;
   className?: ClassValue[] | ClassValue;
@@ -36,7 +36,7 @@ const NavTabs: React.FC<NavTabsProps> = ({ page, children, className }) => {
         <PopoverTrigger className="flex @[1000px]:hidden">
           <div className="flex rounded-lg bg-[--primary-60] p-1.5 gap-2  text-sm w-max">
             <div className="px-8 py-0.5 rounded-md transition bg-white">
-              Выбор страницы
+              {!!page ? page : "Выбор страницы"}
             </div>
           </div>
         </PopoverTrigger>
