@@ -48,7 +48,7 @@ const AdminPanelPage = () => {
       <AdminInfoCards cards={mainStatsTemplate} />
       <ResizablePanelGroup
         direction={isWide ? "horizontal" : "vertical"}
-        className="w-full min-h-max mt-12 flex flex-col md:flex-row gap-2 md:gap-4 xl:gap-6 overflow-auto"
+        className="w-full min-h-max mt-12 flex flex-col md:flex-row gap-2 xl:gap-3 overflow-auto"
       >
         <ResizablePanel className="min-h-max" defaultSize={60}>
           <AdminAlertTable />
