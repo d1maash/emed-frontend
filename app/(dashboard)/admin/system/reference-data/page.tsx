@@ -7,10 +7,10 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import React from "react";
-import { Voenkomats } from "./admin-voenkomat-reference-data-table/data";
-import { AdminVoenkomatReferenceDataTable } from "./admin-voenkomat-reference-data-table/AdminVoenkomatReferenceDataTable";
-import { AdminPodrazdeleniyeReferenceDataTable } from "./admin-podrazdeleniya-reference-data-table/AdminPodrazdeleniyaReferenceDataTable";
-import { Podrazdeleniya } from "./admin-podrazdeleniya-reference-data-table/data";
+import { AdminVoenkomatReferenceDataTable } from "./_components/admin-voenkomat-reference-data-table/AdminVoenkomatReferenceDataTable";
+import { Voenkomats } from "./_components/admin-voenkomat-reference-data-table/data";
+import { Podrazdeleniya } from "./_components/admin-podrazdeleniya-reference-data-table/data";
+import { AdminPodrazdeleniyeReferenceDataTable } from "./_components/admin-podrazdeleniya-reference-data-table/AdminPodrazdeleniyaReferenceDataTable";
 
 const ReferenceDataPage = () => {
   const { ref, isWide } = useContainerWidth(768);

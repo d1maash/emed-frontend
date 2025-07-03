@@ -9,7 +9,7 @@ import { ClassValue } from "clsx";
 import React from "react";
 
 interface NavTabsProps {
-  page: string;
+  page?: string;
   children: React.ReactNode;
   className?: ClassValue[] | ClassValue;
 }
