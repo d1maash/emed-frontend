@@ -1,5 +1,5 @@
-import React from "react";
 import SystemCard, { SystemCardProps } from "./SystemCard";
+import { cn } from "@/lib/utils";
 
 const systemCardData: SystemCardProps[] = [
   {
@@ -26,7 +26,11 @@ const systemCardData: SystemCardProps[] = [
 
 const SystemCards = () => {
   return (
-    <div className="flex @[1200px]:grid grid-cols-4 overflow-x-auto gap-4 mt-4">
+    <div
+      className={cn(
+        "flex flex-col @[500px]:flex-row @[1000px]:grid grid-cols-4 overflow-x-auto gap-4 mt-4"
+      )}
+    >
       {systemCardData.map((card) => (
         <SystemCard key={card.description} {...card} />
       ))}
