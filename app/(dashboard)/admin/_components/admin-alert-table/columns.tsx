@@ -49,13 +49,13 @@ export const columns: ColumnDef<AlertRow>[] = [
       </button>
     ),
     cell: ({ row }) => (
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-[#F7F7F7] flex items-center justify-center">
+      <div className="flex items-center gap-3 w-full">
+        <div className="w-10 h-10 min-w-10 min-h-10 rounded-full bg-[#F7F7F7] flex items-center justify-center flex-shrink-0">
           <User strokeWidth={1} />
         </div>
-        <div>
-          <div className="font-medium">{row.original.name}</div>
-          <div className="text-xs text-muted-foreground">
+        <div className="min-w-0 flex-1">
+          <div className="font-medium truncate">{row.original.name}</div>
+          <div className="text-xs text-muted-foreground truncate">
             {row.original.role}
           </div>
         </div>

@@ -31,52 +31,65 @@ const AdminAlertTable = () => {
   });
 
   return (
-    <div className="w-full flex flex-col justify-start xl:col-span-3 rounded-xl border px-6 py-8 md:p-10 overflow-auto bg-white xl:h-[820px]">
+    <div className="w-full flex flex-col justify-start xl:col-span-3 rounded-xl border px-6 py-8 md:p-10 overflow-hidden bg-white xl:h-[820px]">
       <div className="flex items-center justify-between">
         <h4 className="text-2xl font-bold">Тревога</h4>
         <AlertCircle size={24} />
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm mt-8">
-          <thead className="border-y bg-[#F7F7F8]">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="py-2.5 px-3 font-medium text-left whitespace-nowrap"
-                    style={{ width: header.getSize() }}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className="border-b hover:bg-[#F7F7F8] transition"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className="py-2 px-3 align-middle whitespace-nowrap"
-                    style={{ width: cell.column.getSize() }}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="flex-1 overflow-hidden mt-8">
+        <div className="h-full overflow-auto">
+          <table className="w-full text-sm">
+            <thead className="border-y bg-[#F7F7F8] sticky top-0">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      className="py-2.5 px-3 truncate text-ellipsis font-medium text-left whitespace-nowrap"
+                      style={{
+                        width: header.getSize(),
+                        minWidth: header.getSize(),
+                        maxWidth: header.getSize(),
+                      }}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.map((row) => (
+                <tr
+                  key={row.id}
+                  className="border-b hover:bg-[#F7F7F8] transition"
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <td
+                      key={cell.id}
+                      className="py-2 px-3 truncate text-ellipsis align-middle whitespace-nowrap"
+                      style={{
+                        width: cell.column.getSize(),
+                        minWidth: cell.column.getSize(),
+                        maxWidth: cell.column.getSize(),
+                      }}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
       {/* Pagination */}
       <div className="mt-8 xl:mt-auto flex justify-center items-center gap-2 select-none">

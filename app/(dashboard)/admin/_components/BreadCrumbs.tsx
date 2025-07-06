@@ -16,7 +16,7 @@ const BreadCrumbs = () => {
   const isMainAdminPage = pathname === "/admin";
 
   return (
-    <div className="flex text-xs gap-1 items-center">
+    <div className="hidden sm:flex text-xs gap-1 items-center">
       {isMainAdminPage ? (
         <Link href="/admin">Панель администратора</Link>
       ) : (
