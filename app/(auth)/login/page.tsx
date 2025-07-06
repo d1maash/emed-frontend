@@ -68,7 +68,7 @@ const Login = () => {
         </MyButton>
         <MyButton
           type="button"
-          className=" w-full"
+          className="w-full bg-[#FFC300] hover:bg-[#FFC300]/80"
           size="small"
           variant={"outline"}
           disabled={isSubmitting}

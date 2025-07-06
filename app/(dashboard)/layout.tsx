@@ -61,7 +61,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <DashboardHeader>
           <BreadCrumbs />
         </DashboardHeader>
-        {children}
+        <div className="mt-5 sm:mt-0">{children}</div>
       </div>
     </div>
   );
