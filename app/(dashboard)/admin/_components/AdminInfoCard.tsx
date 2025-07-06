@@ -14,12 +14,14 @@ const AdminInfoCard: React.FC<AdminInfoCardProps> = ({
   change,
 }) => {
   return (
-    <div className="flex flex-col p-4 pb-9 h-24 min-w-[256px] flex-shrink-0 border bg-white ">
-      <div className="text-base text-muted-foreground font-medium whitespace-nowrap">
-        {title}
+    <div className="flex flex-col p-4 pb-9  flex-shrink-0 border bg-white ">
+      <div className="text-xs sm:text-sm text-muted-foreground font-medium overflow-hidden">
+        <span className="block text-center sm:text-left sm:truncate">
+          {title}
+        </span>
       </div>
-      <div className="flex justify-between items-center gap-4">
-        <h4 className="text-2xl font-bold">{text}</h4>
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <h4 className="text-xl sm:text-2xl font-bold">{text}</h4>
         <div
           className={cn(
             "py-[3px] px-3 text-sm rounded-full",
