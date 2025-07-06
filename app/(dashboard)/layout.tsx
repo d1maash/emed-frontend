@@ -13,6 +13,7 @@ import {
   coordinatorRoutes,
   doctorRoutes,
 } from "@/components/Sidebar/routes";
+import BreadCrumbs from "./admin/_components/BreadCrumbs";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -58,7 +59,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Main content */}
       <div className="flex flex-col flex-1 bg-[#f9faff] md:rounded-s-2xl p-4 lg:p-8 gap-4 lg:gap-8 overflow-auto">
         <DashboardHeader>
-          <div className="flex">Header info</div>
+          <BreadCrumbs />
         </DashboardHeader>
         {children}
       </div>
