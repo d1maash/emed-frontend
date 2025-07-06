@@ -23,7 +23,7 @@ const StatCard: React.FC<StatCardProps> = ({
   change,
 }) => {
   return (
-    <div className="w-full h-full rounded-xl border bg-white flex flex-col items-center justify-center p-6 col-span-2 min-w-[175px]">
+    <div className="w-full h-[300px] rounded-xl border bg-white flex flex-col items-center justify-center p-6 col-span-2 min-w-[175px]">
       <div className="max-h-[65%] aspect-square mb-2">
         <CircularProgressbarWithChildren
           value={percent}
@@ -38,8 +38,10 @@ const StatCard: React.FC<StatCardProps> = ({
           })}
           circleRatio={0.75} // 270deg
         >
-          <div className="text-2xl font-bold text-[--coolgray-60]">
-            {percent}%
+          <div className="flex flex-col items-center justify-end mb-3 h-full">
+            <div className="text-2xl font-bold text-[--coolgray-60]">
+              {percent}%
+            </div>
           </div>
         </CircularProgressbarWithChildren>
       </div>

@@ -9,6 +9,7 @@ import { Download, Search, Plus } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { reports } from "./_components/admin-reports-table/data";
 import { AdminReportsTable } from "./_components/admin-reports-table/AdminReportsTable";
+import { DynamicsBlock } from "./_components/DynamicsBlock";
 
 const AdminStatsPage = () => {
   const [page, setPage] = useState<"stats" | "reports">("stats");
@@ -49,11 +50,9 @@ const AdminStatsPage = () => {
         </div>
         <div className="w-full h-max flex flex-col mt-7 @lg:grid grid-cols-4 gap-4">
           <div className="w-full h-full border col-span-3 bg-white rounded-xl ">
-            <div className="w-full h-full flex justify-center items-center text-4xl md:text-6xl xl:text-8xl text-center font-extrabold p-4">
-              Здесь могла быть ваша реклама
-            </div>
+            <DynamicsBlock />
           </div>
-          <div className="w-full h-max gap-4 grid @container grid-cols-2 ">
+          <div className="w-full h-max sm:h-[400px] gap-4 grid @container grid-cols-2 ">
             <StatCard
               title="Завершено"
               percent={66}
