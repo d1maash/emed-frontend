@@ -37,9 +37,9 @@ export const doctorRoutes: SidebarRouteProps[] = [
 
 export const recruitRoutes: SidebarRouteProps[] = [
   { text: "Личный кабинет", link: "/recruit" },
-  { text: "График приемов", link: "/recruit/" },
-  { text: "Результаты осмотров", link: "/recruit/" },
-  { text: "Профиль", link: "/recruit/" },
-  { text: "Справки и документы", link: "/recruit/" },
-  { text: "Техподдержка / FAQ", link: "/recruit/" },
+  { text: "График приемов", link: "/recruit/schedule" },
+  { text: "Результаты осмотров", link: "/recruit/results" },
+  { text: "Профиль", link: "/recruit/profile" },
+  { text: "Справки и документы", link: "/recruit/docs" },
+  { text: "Техподдержка / FAQ", link: "/recruit/support" },
 ];

@@ -9,12 +9,15 @@ import { SidebarRouteProps } from "./routes";
 const SidebarRoute: React.FC<SidebarRouteProps> = ({ text, link, onClick }) => {
   const pathname = usePathname();
   const active =
-    pathname === link || (link !== "/admin" && pathname.startsWith(link + "/"));
+    pathname === link ||
+    (link !== "/admin" &&
+      link !== "/recruit" &&
+      pathname.startsWith(link + "/"));
 
   return (
     <div
       className={cn(
-        "flex justify-start items-center p-2 w-full rounded-xl text-white text-base font-medium",
+        "flex justify-start items-center p-2 w-full rounded-xl text-white text-sm font-medium",
         !!active && "bg-white text-black"
       )}
       onClick={onClick}

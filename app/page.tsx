@@ -12,6 +12,9 @@ export default function Home() {
           <div className="bg-[--primary-90] rounded-xl mt-4">
             <SidebarRoute text="Check Login Page" link="login" />
           </div>
+          <div className="bg-[--primary-90] rounded-xl mt-4">
+            <SidebarRoute text="Check Recruit Page" link="recruit" />
+          </div>
         </div>
       </h1>
     </div>

@@ -237,7 +237,7 @@ const AdminNotificationsCard = () => {
                   <div className="flex items-center justify-between">
                     <span
                       className={cn(
-                        "font-semibold line-clamp-1",
+                        "font-semibold text-sm line-clamp-1",
                         n.unread && "text-[--primary-90]"
                       )}
                     >
@@ -247,7 +247,7 @@ const AdminNotificationsCard = () => {
                       {formatDate(n.date)}
                     </span>
                   </div>
-                  <div className="text-gray-500 text-sm mt-1 line-clamp-2">
+                  <div className="text-gray-500 text-xs mt-1 line-clamp-2">
                     {n.labels}
                   </div>
                 </div>
