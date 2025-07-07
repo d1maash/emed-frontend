@@ -23,7 +23,7 @@ const BreadCrumbs = () => {
         <>
           <Link href="/admin">Панель администратора</Link>
           <span>/</span>
-          <span>{currentRoute?.text || "Панель администратора"}</span>
+          <span>{currentRoute?.text}</span>
         </>
       )}
     </div>
