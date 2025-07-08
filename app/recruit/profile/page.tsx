@@ -47,7 +47,7 @@ const notificationOptions = [
   { key: "conclusion", label: "Сообщать, когда доступно заключение врача" },
 ];
 
-const page = () => {
+const Page = () => {
   const [tab, setTab] = useState<"profile" | "security">("profile");
   const [language, setLanguage] = useState("ru");
   const [notifications, setNotifications] = useState({
@@ -231,4 +231,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
