@@ -6,14 +6,12 @@ import Sidebar from "@/components/Sidebar/Sidebar";
 import { Button } from "@/components/ui/Button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
-import DashboardHeader from "@/components/Header";
 import {
   adminRoutes,
   commissionRoutes,
   coordinatorRoutes,
   doctorRoutes,
 } from "@/components/Sidebar/routes";
-import BreadCrumbs from "./admin/_components/BreadCrumbs";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -58,9 +56,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Main content */}
       <div className="flex flex-col flex-1 bg-[#f9faff] md:rounded-s-2xl p-4 lg:p-8 gap-4 lg:gap-8 overflow-auto">
-        <DashboardHeader>
-          <BreadCrumbs />
-        </DashboardHeader>
         <div className="mt-5 sm:mt-0">{children}</div>
       </div>
     </div>

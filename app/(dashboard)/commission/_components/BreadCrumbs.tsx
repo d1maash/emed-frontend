@@ -2,27 +2,27 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-import { adminRoutes } from "@/components/Sidebar/routes";
+import { commissionRoutes } from "@/components/Sidebar/routes";
 
 const BreadCrumbs = () => {
   const pathname = usePathname();
 
-  const currentRoute = adminRoutes.find((route) => {
+  const currentRoute = commissionRoutes.find((route) => {
     if (route.link === pathname) return true;
-    if (route.link !== "/admin" && pathname.startsWith(route.link + "/"))
+    if (route.link !== "/commission" && pathname.startsWith(route.link + "/"))
       return true;
     return false;
   });
 
-  const isMainAdminPage = pathname === "/admin";
+  const isMainCommissionPage = pathname === "/commission";
 
   return (
     <div className="hidden sm:flex text-xs gap-1 items-center">
-      {isMainAdminPage ? (
-        <Link href="/admin">Панель администратора</Link>
+      {isMainCommissionPage ? (
+        <Link href="/commission">Комиссия / Главная</Link>
       ) : (
         <>
-          <Link href="/admin">Панель администратора</Link>
+          <Link href="/commission">Комиссия</Link>
           <span>/</span>
           <span>{currentRoute?.text}</span>
         </>
