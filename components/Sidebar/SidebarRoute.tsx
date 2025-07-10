@@ -12,6 +12,7 @@ const SidebarRoute: React.FC<SidebarRouteProps> = ({ text, link, onClick }) => {
     pathname === link ||
     (link !== "/admin" &&
       link !== "/recruit" &&
+      link !== "/commission" &&
       pathname.startsWith(link + "/"));
 
   return (
