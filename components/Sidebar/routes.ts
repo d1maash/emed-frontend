@@ -13,8 +13,8 @@ export const adminRoutes: SidebarRouteProps[] = [
 
 export const commissionRoutes: SidebarRouteProps[] = [
   { text: "Дэшборд", link: "/commission" },
-  { text: "Дело призывника", link: "/commission" },
-  { text: "Протоколы и история", link: "/commission" },
+  { text: "Дело призывника", link: "/commission/case" },
+  { text: "Протоколы и история", link: "/commission/history" },
 ];
 
 export const coordinatorRoutes: SidebarRouteProps[] = [
