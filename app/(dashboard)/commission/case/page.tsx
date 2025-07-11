@@ -21,6 +21,7 @@ import { useForm } from "react-hook-form";
 import z from "zod";
 import { Banner } from "@/components/myui/Banner";
 import Textarea from "@/components/myui/MyTextarea";
+import DownloadList from "./_component/DownloadList";
 
 const schema = z.object({
   fit: z.boolean(),
@@ -133,6 +134,30 @@ const CommissionCasePage = () => {
     ],
   };
 
+  const files = [
+    {
+      id: "12345",
+      name: "ЭКГ_заключение",
+      extension: "pdf",
+      size: "3.1MB",
+      src: "#",
+    },
+    {
+      id: "12345",
+      name: "ЭКГ_заключение",
+      extension: "pdf",
+      size: "3.1MB",
+      src: "#",
+    },
+    {
+      id: "12345",
+      name: "Эта страница",
+      extension: "html",
+      size: "3.1MB",
+      src: "#",
+    },
+  ];
+
   if (!id || !isLegal) {
     return (
       <div className="flex flex-col gap-4 text-center ">
@@ -164,7 +189,7 @@ const CommissionCasePage = () => {
       <div className="border border-[--primary-30] rounded-xl min-h-12 p-4 gap-4 2xl:p-8 2xl:gap-8 grid xl:grid-cols-3">
         <div
           className={cn(
-            "xl:col-span-2 p-6 rounded-xl border min-h-max",
+            "xl:col-span-2 p-6 rounded-xl border min-h-max bg-white",
             user.decision == "fit" && "border-[--success] border-2",
             user.decision == "unfit" && "border-[--error] border-2",
             user.decision == "defer" && "border-[--warning] border-2"
@@ -233,6 +258,7 @@ const CommissionCasePage = () => {
                 </Accordion>
               </div>
             )}
+            <DownloadList files={files} />
           </div>
         </div>
         <div className="flex flex-col gap-4">
@@ -350,7 +376,7 @@ const CommissionCasePage = () => {
           </div>
         </div>
       </div>
-      {/* Pages i guess */}
+      {/* Pagination i guess */}
       <div className="flex justify-between mt-4">
         <Button
           variant="link"
