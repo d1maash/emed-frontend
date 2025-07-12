@@ -11,6 +11,7 @@ import {
   commissionRoutes,
   coordinatorRoutes,
   doctorRoutes,
+  recruitRoutes,
 } from "@/components/Sidebar/routes";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
@@ -21,11 +22,13 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     ? commissionRoutes
     : pathname.includes("coordinator")
     ? coordinatorRoutes
+    : pathname.includes("recruit")
+    ? recruitRoutes
     : doctorRoutes;
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="h-screen w-full flex bg-[--primary-90]">
+    <div className="min-h-screen w-full flex bg-[--primary-90]">
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <Sidebar routes={routes} />

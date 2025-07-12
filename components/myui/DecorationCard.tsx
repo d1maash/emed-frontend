@@ -18,12 +18,12 @@ const DecorationCard: React.FC<DecorationCardProps> = ({
   return (
     <div
       className={cn(
-        "relative overflow-hidden border rounded-xl min-w-12 px-2 py-3",
+        "relative overflow-hidden border rounded-xl min-w-12 pl-3 py-3",
         colorVariant == "white" && "bg-white",
         colorVariant == "primary" && "bg-[--primary-30]"
       )}
     >
-      {children}
+      <div className="relative z-10">{children}</div>
       <Image
         src={`/illustrations/${decorationName}.svg`}
         alt="decoration"
