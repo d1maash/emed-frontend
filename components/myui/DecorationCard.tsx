@@ -23,7 +23,7 @@ const DecorationCard: React.FC<DecorationCardProps> = ({
         colorVariant == "primary" && "bg-[--primary-30]"
       )}
     >
-      {children}
+      <div className="relative z-10">{children}</div>
       <Image
         src={`/illustrations/${decorationName}.svg`}
         alt="decoration"
