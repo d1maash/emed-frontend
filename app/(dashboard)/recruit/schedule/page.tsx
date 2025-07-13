@@ -5,6 +5,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
 import { Settings2 } from "lucide-react";
 import Image from "next/image";
 
@@ -43,8 +44,8 @@ const scheduleData = [
 
 const RecruitSchedulePage = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="md:col-span-2 grid grid-cols-1 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2 grid grid-cols-1 gap-4">
         {scheduleData.length == 0 && (
           <div className="text-2xl font-semibold">
             Здесь будут приемы назначенные вам докторами.
@@ -94,12 +95,13 @@ const RecruitSchedulePage = () => {
           ))}
         </Accordion>
       </div>
-      <div className="flex flex-col gap-4 w-full md:max-w-[400px]">
+
+      <div className="flex flex-col gap-4 w-full lg:max-w-[400px]">
         <div className="flex justify-between gap-4 max-h-20">
           <div className="bg-[--primary-60] w-4/5 p-3 rounded-xl flex justify-start gap-3">
             <div className="aspect-square h-full">
               <Image
-                src={"/"}
+                src={"/ava.jpg"}
                 alt=""
                 width={50}
                 height={50}
@@ -112,10 +114,26 @@ const RecruitSchedulePage = () => {
               <p className="text-xs">Возраст: 18</p>
             </div>
           </div>
-          <div className="bg-[--primary-60] w-1/5 p-2 aspect-square rounded-xl">
+          <div className="bg-[--primary-60] sm:w-16 lg:w-20 p-2 aspect-square rounded-xl">
             <Settings2 className="w-full h-full text-white" />
           </div>
         </div>
+
+        <div>
+          <Calendar
+            mode="multiple"
+            selected={[new Date()]}
+            // onSelect={setDate}
+            className="w-full max-w-[320px] sm:max-w-[350px] md:max-w-[380px] lg:max-w-[400px] mx-auto p-2 sm:p-3 md:p-4 lg:p-6 bg-[--primary-60] rounded-2xl text-white [&_[data-selected-single=true]]:bg-white [&_[data-selected-single=true]]:text-[--primary-60] [&_[data-selected-single=true]]:hover:bg-white [&_[data-selected-single=true]]:hover:text-[--primary-60]"
+            classNames={{
+              weekday:
+                "text-white text-[0.8rem] font-normal flex-1 select-none rounded-md",
+              caption_label: "text-white font-medium",
+              nav_button: "text-white hover:text-white/80",
+            }}
+          />
+        </div>
+
         <div className="p-4 w-full bg-[--primary-60] rounded-xl text-white flex flex-col gap-1">
           <h4 className="text-2xl font-semibold">Важно знать:</h4>
           <p className="text-sm">
