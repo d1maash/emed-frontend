@@ -24,7 +24,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     ? coordinatorRoutes
     : pathname.includes("recruit")
     ? recruitRoutes
-    : doctorRoutes;
+    : pathname.includes("doctor")
+    ? doctorRoutes
+    : [];
   const [open, setOpen] = useState(false);
 
   return (
