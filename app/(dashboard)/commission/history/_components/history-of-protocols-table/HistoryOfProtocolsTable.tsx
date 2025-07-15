@@ -11,7 +11,7 @@ import {
   SortingState,
 } from "@tanstack/react-table";
 import { columns } from "./columns";
-import { Recruit } from "./types";
+import { Protocol } from "./types";
 import {
   Table,
   TableBody,
@@ -23,11 +23,13 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface RecruitTableProps {
-  data: Recruit[];
+interface HistoryOfProtocolsTableProps {
+  data: Protocol[];
 }
 
-export const RecruitTable: React.FC<RecruitTableProps> = ({ data }) => {
+export const HistoryOfProtocolsTable: React.FC<
+  HistoryOfProtocolsTableProps
+> = ({ data }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pageIndex, setPageIndex] = useState(1);
 
@@ -85,7 +87,7 @@ export const RecruitTable: React.FC<RecruitTableProps> = ({ data }) => {
                   <TableCell
                     key={cell.id}
                     className={cn(
-                      "py-2 px-3 truncate overflow-clip text-ellipsis align-middle whitespace-nowrap"
+                      "py-2 px-3 truncate text-ellipsis align-middle whitespace-nowrap overflow-clip"
                     )}
                     style={{
                       width: cell.column.getSize(),
