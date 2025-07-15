@@ -6,6 +6,10 @@ import { Recruit } from "./_components/recruit-table/types";
 import { useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { Search } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { ru } from "date-fns/locale";
+import { Separator } from "@/components/ui/separator";
+import DateBlocks, { MeetingBlock } from "./_components/DateBlocks";
 
 const page = () => {
   const [globalFilter, setGlobalFilter] = useState("");
@@ -96,14 +100,84 @@ const page = () => {
           </DecorationCard>
         </div>
       </div>
-      <div className="border border-[--primary-60] w-full min-h-12 rounded-xl">
-        {/* Schedule component */}
+      <div className="flex flex-col gap-4 border border-[--primary-60] min-h-12 rounded-xl bg-white overflow-y-auto h-max max-h-[85vh]">
+        <Calendar
+          locale={ru}
+          mode="multiple"
+          selected={[new Date()]}
+          // onSelect={setDate}
+          className=" w-full whitespace-normal flex-nowrap max-w-[320px] sm:max-w-[350px] md:max-w-[380px] lg:max-w-[400px] mx-auto p-2 sm:p-3 md:p-4 lg:p-6 rounded-2xl  [&_[data-selected-single=true]]:bg-white [&_[data-selected-single=true]]:text-[--primary-60] [&_[data-selected-single=true]]:hover:bg-white [&_[data-selected-single=true]]:hover:text-[--primary-60]"
+          classNames={{
+            weekday:
+              " text-[0.8rem] font-normal flex-1 select-none  bg-[--primary-60] py-2 px-1 text-sm text-white",
+            weekdays: "rounded-xl overflow-hidden flex",
+            caption_label: "font-medium",
+            nav_button: " hover:text-white/80",
+          }}
+        />
+        <div className="mx-4">
+          <Separator orientation="horizontal" />
+        </div>
+        <div className="overflow-y-auto">
+          <DateBlocks meetings={meetings} />
+        </div>
       </div>
     </div>
   );
 };
 
 export default page;
+
+const meetings: MeetingBlock[] = [
+  {
+    id: "block001",
+    day: "Пн",
+    date: "23",
+    title: "Совещание",
+    time: "10:00",
+    room: "№4 каб.",
+  },
+  {
+    id: "block002",
+    day: "Пн",
+    date: "23",
+    title: "Совещание",
+    time: "10:00",
+    room: "№4 каб.",
+  },
+  {
+    id: "block003",
+    day: "Пт",
+    date: "20",
+    title: "Совещание",
+    time: "10:00",
+    room: "№4 каб.",
+  },
+  {
+    id: "block004",
+    day: "Пт",
+    date: "20",
+    title: "Совещание",
+    time: "10:00",
+    room: "№4 каб.",
+  },
+  {
+    id: "block005",
+    day: "Пт",
+    date: "20",
+    title: "Совещание",
+    time: "10:00",
+    room: "№4 каб.",
+  },
+  {
+    id: "block006",
+    day: "Пт",
+    date: "20",
+    title: "Совещание",
+    time: "10:00",
+    room: "№4 каб.",
+  },
+];
 
 const recruits: Recruit[] = [
   {

@@ -18,6 +18,9 @@ export default function Home() {
           <div className="bg-[--primary-90] rounded-xl mt-4">
             <SidebarRoute text="Check Commission Page" link="commission" />
           </div>
+          <div className="bg-[--primary-90] rounded-xl mt-4">
+            <SidebarRoute text="Check Doctor Page" link="doctor" />
+          </div>
         </div>
       </h1>
     </div>
