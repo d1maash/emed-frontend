@@ -30,6 +30,7 @@ export const doctorRoutes: SidebarRouteProps[] = [
   { text: "График приемов", link: "/doctor/schedule" },
   { text: "Призывники на осмотр", link: "/doctor/conscripts" },
   { text: "Медицинские заключения", link: "/doctor/medical-conclusions" },
+  { text: "Лист мед. освидетельствования", link: "/doctor/list-medical" },
   { text: "Профиль", link: "/doctor/profile" },
   { text: "Справки и документы", link: "/doctor/docs" },
   { text: "Техподдержка / FAQ", link: "/doctor/support" },
