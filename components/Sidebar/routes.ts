@@ -19,10 +19,10 @@ export const commissionRoutes: SidebarRouteProps[] = [
 
 export const coordinatorRoutes: SidebarRouteProps[] = [
   { text: "Личный кабинет", link: "/coordinator" },
-  { text: "Список призывников", link: "/coordinator" },
-  { text: "График приемов", link: "/coordinator" },
-  { text: "Кадровые данные", link: "/coordinator" },
-  { text: "Отчеты и статистика", link: "/coordinator" },
+  { text: "Список призывников", link: "/coordinator/conscripts" },
+  { text: "График приемов", link: "/coordinator/schedule" },
+  { text: "Кадровые данные", link: "/coordinator/info" },
+  { text: "Отчеты и статистика", link: "/coordinator/stats" },
 ];
 
 export const doctorRoutes: SidebarRouteProps[] = [
@@ -30,6 +30,7 @@ export const doctorRoutes: SidebarRouteProps[] = [
   { text: "График приемов", link: "/doctor/schedule" },
   { text: "Призывники на осмотр", link: "/doctor/conscripts" },
   { text: "Медицинские заключения", link: "/doctor/medical-conclusions" },
+  { text: "Лист мед. освидетельствования", link: "/doctor/list-medical" },
   { text: "Профиль", link: "/doctor/profile" },
   { text: "Справки и документы", link: "/doctor/docs" },
   { text: "Техподдержка / FAQ", link: "/doctor/support" },
