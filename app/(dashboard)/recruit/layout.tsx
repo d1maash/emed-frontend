@@ -1,20 +1,23 @@
 import DashboardHeader from "@/components/Header";
 import React from "react";
 import BreadCrumbs from "./_components/BreadCrumbs";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 interface RecruitLayoutProps {
   children: React.ReactNode;
 }
 
-const RecruitLayout: React.FC<RecruitLayoutProps> = ({ children }) => {
+export default function RecruitLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <>
+    <ProtectedRoute allowedRoles={["conscript"]}>
       <DashboardHeader>
         <BreadCrumbs />
       </DashboardHeader>
       <div className="mt-5 sm:mt-10">{children}</div>
-    </>
+    </ProtectedRoute>
   );
-};
-
-export default RecruitLayout;
+}

@@ -13,8 +13,13 @@ import {
   doctorRoutes,
   recruitRoutes,
 } from "@/components/Sidebar/routes";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const routes = pathname.includes("admin")
     ? adminRoutes
@@ -30,41 +35,41 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen w-full flex bg-[--primary-90]">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        <Sidebar routes={routes} />
-      </div>
+    <ProtectedRoute>
+      <div className="min-h-screen flex flex-col md:flex-row bg-[--primary-90]">
+        {/* Desktop Sidebar */}
+        <div className="hidden md:block">
+          <Sidebar routes={routes} />
+        </div>
 
-      {/* TODO: mobile Sidebar icon */}
-      <div className="fixed top-4 left-4 z-50 md:hidden">
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="bg-white shadow">
-              <Menu className="w-7 h-7 text-black" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent
-            side="left"
-            className="p-0 bg-[--primary-90] w-72 border-none outline-none"
-          >
-            <Sidebar
-              routes={routes.map((route) => ({
-                ...route,
-                onClick: () => setOpen(false), // Закрывать сайдбар при клике
-              }))}
-              onClick={() => setOpen(false)}
-            />
-          </SheetContent>
-        </Sheet>
-      </div>
+        {/* TODO: mobile Sidebar icon */}
+        <div className="fixed top-4 left-4 z-50 md:hidden">
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="bg-white shadow">
+                <Menu className="w-7 h-7 text-black" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              className="p-0 bg-[--primary-90] w-72 border-none outline-none"
+            >
+              <Sidebar
+                routes={routes.map((route) => ({
+                  ...route,
+                  onClick: () => setOpen(false), // Закрывать сайдбар при клике
+                }))}
+                onClick={() => setOpen(false)}
+              />
+            </SheetContent>
+          </Sheet>
+        </div>
 
-      {/* Main content */}
-      <div className="flex flex-col flex-1 bg-[#f9faff] md:rounded-s-2xl p-4 lg:p-8 gap-4 lg:gap-8 overflow-auto">
-        <div className="mt-5 sm:mt-0">{children}</div>
+        {/* Main content */}
+        <div className="flex flex-col flex-1 bg-[#f9faff] md:rounded-s-2xl p-4 lg:p-8 gap-4 lg:gap-8 overflow-auto">
+          <div className="mt-5 sm:mt-0">{children}</div>
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
-};
-
-export default DashboardLayout;
+}

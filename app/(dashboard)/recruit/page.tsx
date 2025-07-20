@@ -5,24 +5,50 @@ import AccordionList from "./_components/AccordionList";
 import Stepper from "./_components/Stepper";
 import { Separator } from "@/components/ui/separator";
 import InfoCard from "./_components/InfoCard";
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { getRecruitDashboard } from "@/store/slices/recruitDashboardSlice";
+import LoadingScreen from "@/components/LoadingScreen";
 
-const page = () => {
+const Page = () => {
+  const dispatch = useAppDispatch();
+  const {
+    data = null,
+    loading = false,
+    error = null,
+  } = useAppSelector((state) => state.recruitDashboard || {});
+  const access = useAppSelector((state) => state.auth.access);
+  const user = useAppSelector((state) => state.auth.user);
+
+  useEffect(() => {
+    if (user && user.role === "conscript" && !data && access) {
+      dispatch(getRecruitDashboard(access));
+    }
+  }, [user, data, access, dispatch]);
+
+  if (!user || user.role !== "conscript" || loading || !data)
+    return <LoadingScreen />;
+  if (error) return <div className="text-red-500">{error}</div>;
+
+  const profile = data.profile;
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       <div className="md:col-span-2">
-        <h1 className="text-4xl font-bold ">Здраствуйте , Иван Иванович !</h1>
+        <h1 className="text-4xl font-bold ">
+          Здраствуйте , {profile?.full_name} !
+        </h1>
         <div className="flex flex-wrap items-center gap-3 mt-2">
           <div className="flex items-center gap-2">
             <p className="text-sm sm:text-base font-medium">ИИН :</p>
             <p className="bg-[--primary-90] text-xs sm:text-sm font-medium py-1 px-3 rounded-xl text-white">
-              070230517010
+              {profile?.iin}
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <p className="text-sm sm:text-base font-medium">Статус :</p>
             <p className="bg-[#FFD54D] text-xs sm:text-sm font-medium py-1 px-3 rounded-xl text-white">
-              Ожидается медосмотр !
+              {profile?.fitness_status}
             </p>
           </div>
         </div>
@@ -91,4 +117,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
