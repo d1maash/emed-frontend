@@ -3,6 +3,7 @@ import axios from "axios";
 import { store } from "@/store";
 import { refreshToken as refreshTokenApi } from "@/api/auth";
 import { setTokens, logout } from "@/store/slices/authSlice";
+import { serialize, parse } from "cookie";
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
@@ -26,6 +27,28 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+export function setTokenCookie(name: string, value: string, days = 7) {
+  document.cookie = serialize(name, value, {
+    path: "/",
+    maxAge: 60 * 60 * 24 * days,
+    secure: true,
+    sameSite: "lax",
+  });
+}
+
+export function getTokenCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const cookies = parse(document.cookie || "");
+  return cookies[name] || null;
+}
+
+export function removeTokenCookie(name: string) {
+  document.cookie = serialize(name, "", {
+    path: "/",
+    maxAge: -1,
+  });
+}
 
 api.interceptors.response.use(
   (response) => response,
@@ -51,7 +74,7 @@ api.interceptors.response.use(
           });
       }
       isRefreshing = true;
-      const refresh = localStorage.getItem("refresh");
+      const refresh = getTokenCookie("refresh");
       if (!refresh) {
         store.dispatch(logout());
         isRefreshing = false;
@@ -62,8 +85,8 @@ api.interceptors.response.use(
         store.dispatch(
           setTokens({ access: data.access, refresh: data.refresh || refresh })
         );
-        localStorage.setItem("access", data.access);
-        if (data.refresh) localStorage.setItem("refresh", data.refresh);
+        setTokenCookie("access", data.access);
+        if (data.refresh) setTokenCookie("refresh", data.refresh);
         api.defaults.headers["Authorization"] = "Bearer " + data.access;
         processQueue(null, data.access);
         originalRequest.headers["Authorization"] = "Bearer " + data.access;
