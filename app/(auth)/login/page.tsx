@@ -135,6 +135,7 @@ const Login = () => {
           placeholder="ИИН"
           autoComplete="iin"
           className="w-full"
+          maxLength={12}
           error={errors.iin?.message}
         />
         <MyInput

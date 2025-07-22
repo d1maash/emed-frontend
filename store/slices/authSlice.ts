@@ -5,6 +5,7 @@ import {
   ecpLogin as ecpLoginApi,
 } from "@/api/auth";
 import type { User } from "@/types/user";
+import { getTokenCookie, setTokenCookie, removeTokenCookie } from "@/utils/api";
 
 interface AuthState {
   access: string | null;
@@ -76,10 +77,8 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.error = null;
       state.user = null;
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("access");
-        localStorage.removeItem("refresh");
-      }
+      removeTokenCookie("access");
+      removeTokenCookie("refresh");
     },
     setTokens: (
       state,
@@ -88,19 +87,18 @@ const authSlice = createSlice({
       state.access = action.payload.access;
       state.refresh = action.payload.refresh;
       state.isAuthenticated = true;
+      setTokenCookie("access", action.payload.access);
+      setTokenCookie("refresh", action.payload.refresh);
     },
     rehydrateAuth: (state) => {
-      if (typeof window !== "undefined") {
-        const access = localStorage.getItem("access");
-        const refresh = localStorage.getItem("refresh");
-
-        if (access) {
-          state.access = access;
-          state.isAuthenticated = true;
-        }
-        if (refresh) {
-          state.refresh = refresh;
-        }
+      const access = getTokenCookie("access");
+      const refresh = getTokenCookie("refresh");
+      if (access) {
+        state.access = access;
+        state.isAuthenticated = true;
+      }
+      if (refresh) {
+        state.refresh = refresh;
       }
     },
   },
@@ -116,10 +114,8 @@ const authSlice = createSlice({
         state.access = action.payload.access;
         state.refresh = action.payload.refresh;
         state.isAuthenticated = true;
-        if (typeof window !== "undefined") {
-          localStorage.setItem("access", action.payload.access);
-          localStorage.setItem("refresh", action.payload.refresh);
-        }
+        setTokenCookie("access", action.payload.access);
+        setTokenCookie("refresh", action.payload.refresh);
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
@@ -147,10 +143,8 @@ const authSlice = createSlice({
         state.refresh = action.payload.refresh;
         state.user = action.payload.user;
         state.isAuthenticated = true;
-        if (typeof window !== "undefined") {
-          localStorage.setItem("access", action.payload.access);
-          localStorage.setItem("refresh", action.payload.refresh);
-        }
+        setTokenCookie("access", action.payload.access);
+        setTokenCookie("refresh", action.payload.refresh);
       })
       .addCase(ecpLogin.rejected, (state, action) => {
         state.loading = false;
