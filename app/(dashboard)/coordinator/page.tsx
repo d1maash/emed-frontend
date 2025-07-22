@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { ChartPieDonut } from "./_components/ChartPieDonut";
 import { ChartBarInteractive } from "./_components/ChartGraphic";
@@ -5,8 +7,31 @@ import { Calendar } from "@/components/ui/calendar";
 import { ChartBarHorizontal } from "./_components/ChartBarHorizontal";
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useEffect } from "react";
+import { getCoordinatorDashboard } from "@/store/slices/coordinatorDashboardSlice";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const page = () => {
+  const dispatch = useAppDispatch();
+  const {
+    data = null,
+    loading = false,
+    error = null,
+  } = useAppSelector((state) => state.coordinatorDashboard || {});
+  const access = useAppSelector((state) => state.auth.access);
+  const user = useAppSelector((state) => state.auth.user);
+
+  useEffect(() => {
+    if (user && user.role === "coordinator" && !data && access) {
+      dispatch(getCoordinatorDashboard(access));
+    }
+  }, [user, data, access, dispatch]);
+
+  if (!user || user.role !== "conscript" || loading || !data)
+    return <LoadingScreen />;
+  if (error) return <div className="text-red-500">{error}</div>;
+
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3">

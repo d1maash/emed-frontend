@@ -23,6 +23,8 @@ export const coordinatorRoutes: SidebarRouteProps[] = [
   { text: "График приемов", link: "/coordinator/schedule" },
   { text: "Кадровые данные", link: "/coordinator/info" },
   { text: "Отчеты и статистика", link: "/coordinator/stats" },
+  // PresentationRoutes
+  { text: "Мед.данные", link: "/coordinator/conscripts/queue" },
 ];
 
 export const doctorRoutes: SidebarRouteProps[] = [

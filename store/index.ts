@@ -1,17 +1,35 @@
-// src/store/index.ts
 import { configureStore } from "@reduxjs/toolkit";
-// import registrationReducer from "./slices/registrationSlice";
-import authReducer from "./slices/authSlice";
+import authReducer, { setTokens, logout } from "./slices/authSlice";
 import recruitDashboardReducer from "./slices/recruitDashboardSlice";
+import coordinatorDashboardReducer from "./slices/coordinatorDashboardSlice";
+import { api } from "../utils/api";
+import { setupInterceptors } from "../utils/apiInterceptors";
+import { refreshToken } from "../api/auth";
 
 export const store = configureStore({
   reducer: {
-    // registration: registrationReducer,
     auth: authReducer,
     recruitDashboard: recruitDashboardReducer,
+    coordinatorDashboard: coordinatorDashboardReducer,
   },
 });
 
-// Типы для TypeScript
+// Настройка интерцепторов после создания store
+setupInterceptors(
+  api,
+  (access: string, refresh?: string) => {
+    store.dispatch(
+      setTokens({
+        access,
+        refresh: refresh || store.getState().auth.refresh || "",
+      })
+    );
+  },
+  () => {
+    store.dispatch(logout());
+  },
+  refreshToken
+);
+
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

@@ -24,6 +24,7 @@ const initialState: AuthState = {
   user: null,
 };
 
+// Async thunks остаются без изменений
 export const login = createAsyncThunk(
   "auth/login",
   async (data: { iin: string; password: string }, { rejectWithValue }) => {
@@ -75,8 +76,10 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.error = null;
       state.user = null;
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("access");
+        localStorage.removeItem("refresh");
+      }
     },
     setTokens: (
       state,
@@ -87,20 +90,22 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
     },
     rehydrateAuth: (state) => {
-      const access =
-        typeof window !== "undefined" ? localStorage.getItem("access") : null;
-      const refresh =
-        typeof window !== "undefined" ? localStorage.getItem("refresh") : null;
-      if (access) {
-        state.access = access;
-        state.isAuthenticated = true;
-      }
-      if (refresh) {
-        state.refresh = refresh;
+      if (typeof window !== "undefined") {
+        const access = localStorage.getItem("access");
+        const refresh = localStorage.getItem("refresh");
+
+        if (access) {
+          state.access = access;
+          state.isAuthenticated = true;
+        }
+        if (refresh) {
+          state.refresh = refresh;
+        }
       }
     },
   },
   extraReducers: (builder) => {
+    // Остальная логика остается без изменений
     builder
       .addCase(login.pending, (state) => {
         state.loading = true;
@@ -111,8 +116,10 @@ const authSlice = createSlice({
         state.access = action.payload.access;
         state.refresh = action.payload.refresh;
         state.isAuthenticated = true;
-        localStorage.setItem("access", action.payload.access);
-        localStorage.setItem("refresh", action.payload.refresh);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("access", action.payload.access);
+          localStorage.setItem("refresh", action.payload.refresh);
+        }
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
@@ -140,8 +147,10 @@ const authSlice = createSlice({
         state.refresh = action.payload.refresh;
         state.user = action.payload.user;
         state.isAuthenticated = true;
-        localStorage.setItem("access", action.payload.access);
-        localStorage.setItem("refresh", action.payload.refresh);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("access", action.payload.access);
+          localStorage.setItem("refresh", action.payload.refresh);
+        }
       })
       .addCase(ecpLogin.rejected, (state, action) => {
         state.loading = false;

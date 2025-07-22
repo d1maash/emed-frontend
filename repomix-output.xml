@@ -1,0 +1,646 @@
+This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of a subset of the repository's contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: store/**, api/**, utils/**
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+api/auth.ts
+api/coordinator.ts
+api/recruit.ts
+store/hooks.ts
+store/index.ts
+store/slices/authSlice.ts
+store/slices/coordinatorDashboardSlice.ts
+store/slices/recruitDashboardSlice.ts
+store/slices/registrationSlice.ts
+utils/api.ts
+utils/phoneUtils.ts
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="api/coordinator.ts">
+import { api } from "@/utils/api";
+
+export const getCoordinatorDashboard = async (access: string) => {
+  const response = await api.get(`/api/users/dashboard/coordinator/`, {
+    headers: {
+      Authorization: `Bearer ${access}`,
+    },
+  });
+  return response.data;
+};
+</file>
+
+<file path="store/slices/coordinatorDashboardSlice.ts">
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { getCoordinatorDashboard as getCoordinatorDashboardApi } from "@/api/coordinator";
+
+interface CoordinatorDashboardState {
+  data: any;
+  loading: boolean;
+  error: string | null;
+}
+
+const initialState: CoordinatorDashboardState = {
+  data: null,
+  loading: false,
+  error: null,
+};
+
+export const getCoordinatorDashboard = createAsyncThunk(
+  "coordinatorDashboard/getCoordinatorDashboard",
+  async (access: string, { rejectWithValue }) => {
+    try {
+      const res = await getCoordinatorDashboardApi(access);
+      return res;
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message || "Ошибка загрузки данных"
+      );
+    }
+  }
+);
+
+const coordinatorDashboardSlice = createSlice({
+  name: "coordinatorDashboard",
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(getCoordinatorDashboard.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getCoordinatorDashboard.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+      })
+      .addCase(getCoordinatorDashboard.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+  },
+});
+
+export default coordinatorDashboardSlice.reducer;
+</file>
+
+<file path="api/auth.ts">
+import { api } from "@/utils/api";
+
+export const login = async (data: { iin: string; password: string }) => {
+  const response = await api.post(`/api/users/auth/login/`, data, {
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.data;
+};
+
+export const getMe = async (access: string) => {
+  const response = await api.get(`/api/users/me/`, {
+    headers: {
+      Authorization: `Bearer ${access}`,
+    },
+  });
+  return response.data;
+};
+
+export const ecpLogin = async (data: {
+  p12_base64: string;
+  password: string;
+}) => {
+  const response = await api.post(`/api/users/auth/ecp-login/`, data, {
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.data;
+};
+
+export const refreshToken = async (refresh: string) => {
+  const response = await api.post(
+    `/api/users/auth/refresh/`,
+    { refresh },
+    {
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+  return response.data;
+};
+
+export const logout = async (access: string) => {
+  return api.post(
+    `/api/users/auth/logout/`,
+    {},
+    {
+      headers: { Authorization: `Bearer ${access}` },
+    }
+  );
+};
+</file>
+
+<file path="api/recruit.ts">
+import { api } from "@/utils/api";
+
+export const getRecruitDashboard = async (access: string) => {
+  const response = await api.get(`/api/users/dashboard/conscript/`, {
+    headers: {
+      Authorization: `Bearer ${access}`,
+    },
+  });
+  return response.data;
+};
+</file>
+
+<file path="store/hooks.ts">
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import type { RootState, AppDispatch } from "./index";
+
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+</file>
+
+<file path="store/slices/authSlice.ts">
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import {
+  login as loginApi,
+  getMe as getMeApi,
+  ecpLogin as ecpLoginApi,
+} from "@/api/auth";
+import type { User } from "@/types/user";
+
+interface AuthState {
+  access: string | null;
+  refresh: string | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  error: string | null;
+  user: User | null;
+}
+
+const initialState: AuthState = {
+  access: null,
+  refresh: null,
+  isAuthenticated: false,
+  loading: false,
+  error: null,
+  user: null,
+};
+
+export const login = createAsyncThunk(
+  "auth/login",
+  async (data: { iin: string; password: string }, { rejectWithValue }) => {
+    try {
+      const res = await loginApi(data);
+      return res;
+    } catch (err: any) {
+      return rejectWithValue(err?.response?.data?.message || "Ошибка входа");
+    }
+  }
+);
+
+export const getMe = createAsyncThunk(
+  "auth/getMe",
+  async (access: string, { rejectWithValue }) => {
+    try {
+      const res = await getMeApi(access);
+      return res;
+    } catch (err: any) {
+      return rejectWithValue("Ошибка получения пользователя");
+    }
+  }
+);
+
+export const ecpLogin = createAsyncThunk(
+  "auth/ecpLogin",
+  async (
+    data: { p12_base64: string; password: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const res = await ecpLoginApi(data);
+      return res;
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message || "Ошибка входа по ЭЦП"
+      );
+    }
+  }
+);
+
+const authSlice = createSlice({
+  name: "auth",
+  initialState,
+  reducers: {
+    logout: (state) => {
+      state.access = null;
+      state.refresh = null;
+      state.isAuthenticated = false;
+      state.error = null;
+      state.user = null;
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
+    },
+    setTokens: (
+      state,
+      action: PayloadAction<{ access: string; refresh: string }>
+    ) => {
+      state.access = action.payload.access;
+      state.refresh = action.payload.refresh;
+      state.isAuthenticated = true;
+    },
+    rehydrateAuth: (state) => {
+      const access =
+        typeof window !== "undefined" ? localStorage.getItem("access") : null;
+      const refresh =
+        typeof window !== "undefined" ? localStorage.getItem("refresh") : null;
+      if (access) {
+        state.access = access;
+        state.isAuthenticated = true;
+      }
+      if (refresh) {
+        state.refresh = refresh;
+      }
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        state.access = action.payload.access;
+        state.refresh = action.payload.refresh;
+        state.isAuthenticated = true;
+        localStorage.setItem("access", action.payload.access);
+        localStorage.setItem("refresh", action.payload.refresh);
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(getMe.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getMe.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(getMe.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(ecpLogin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(ecpLogin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.access = action.payload.access;
+        state.refresh = action.payload.refresh;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+        localStorage.setItem("access", action.payload.access);
+        localStorage.setItem("refresh", action.payload.refresh);
+      })
+      .addCase(ecpLogin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+  },
+});
+
+export const { logout, setTokens, rehydrateAuth } = authSlice.actions;
+export default authSlice.reducer;
+</file>
+
+<file path="store/slices/recruitDashboardSlice.ts">
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { getRecruitDashboard as getRecruitDashboardApi } from "@/api/recruit";
+
+interface RecruitDashboardState {
+  data: any;
+  loading: boolean;
+  error: string | null;
+}
+
+const initialState: RecruitDashboardState = {
+  data: null,
+  loading: false,
+  error: null,
+};
+
+export const getRecruitDashboard = createAsyncThunk(
+  "recruitDashboard/getRecruitDashboard",
+  async (access: string, { rejectWithValue }) => {
+    try {
+      const res = await getRecruitDashboardApi(access);
+      return res;
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message || "Ошибка загрузки данных"
+      );
+    }
+  }
+);
+
+const recruitDashboardSlice = createSlice({
+  name: "recruitDashboard",
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(getRecruitDashboard.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getRecruitDashboard.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+      })
+      .addCase(getRecruitDashboard.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+  },
+});
+
+export default recruitDashboardSlice.reducer;
+</file>
+
+<file path="utils/phoneUtils.ts">
+export function maskPhoneNumber(phone: string): string {
+  if (!phone) return "";
+
+  // Remove all non-digit characters except +
+  const cleaned = phone.replace(/[^\d+]/g, "");
+
+  if (cleaned.startsWith("+7") && cleaned.length === 12) {
+    // +77771234567 -> +7777***4567
+    return `${cleaned.slice(0, 5)}***${cleaned.slice(-4)}`;
+  }
+
+  if (cleaned.startsWith("8") && cleaned.length === 11) {
+    // 87771234567 -> 8777***4567
+    return `${cleaned.slice(0, 4)}***${cleaned.slice(-4)}`;
+  }
+
+  if (cleaned.startsWith("7") && cleaned.length === 11) {
+    // 77771234567 -> 7777***4567
+    return `${cleaned.slice(0, 4)}***${cleaned.slice(-4)}`;
+  }
+
+  return phone;
+}
+</file>
+
+<file path="store/index.ts">
+// src/store/index.ts
+import { configureStore } from "@reduxjs/toolkit";
+// import registrationReducer from "./slices/registrationSlice";
+import authReducer from "./slices/authSlice";
+import recruitDashboardReducer from "./slices/recruitDashboardSlice";
+import coordinatorDashboardReducer from "./slices/coordinatorDashboardSlice";
+
+export const store = configureStore({
+  reducer: {
+    // registration: registrationReducer,
+    auth: authReducer,
+    recruitDashboard: recruitDashboardReducer,
+    coordinatorDashboard: coordinatorDashboardReducer,
+  },
+});
+
+// Типы для TypeScript
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+</file>
+
+<file path="store/slices/registrationSlice.ts">
+// // src/store/slices/registrationSlice.ts
+// import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
+// import { RegistrationData, VerificationData } from '@/types/registration'
+// // import { sendVerificationCode, verifyCode } from '@/utils/api'
+
+// interface RegistrationState {
+//   formData: RegistrationData | null
+//   isLoading: boolean
+//   error: string | null
+//   isCodeSent: boolean
+//   phoneNumber: string
+//   verificationAttempts: number
+// }
+
+// const initialState: RegistrationState = {
+//   formData: null,
+//   isLoading: false,
+//   error: null,
+//   isCodeSent: false,
+//   phoneNumber: '',
+//   verificationAttempts: 0,
+// }
+
+// export const sendPhoneVerification = createAsyncThunk(
+//   'registration/sendPhoneVerification',
+//   async (registrationData: RegistrationData, { rejectWithValue }) => {
+//     try {
+//       const response = await sendVerificationCode(registrationData)
+//       return response.data
+//     } catch (error: any) {
+//       return rejectWithValue(error.response?.data?.message || 'Ошибка отправки кода')
+//     }
+//   }
+// )
+
+// export const verifyPhoneCode = createAsyncThunk(
+//   'registration/verifyPhoneCode',
+//   async (verificationData: VerificationData, { rejectWithValue }) => {
+//     try {
+//       const response = await verifyCode(verificationData)
+//       return response.data
+//     } catch (error: any) {
+//       return rejectWithValue(error.response?.data?.message || 'Неверный код')
+//     }
+//   }
+// )
+
+// const registrationSlice = createSlice({
+//   name: 'registration',
+//   initialState,
+//   reducers: {
+//     setFormData: (state, action: PayloadAction<RegistrationData>) => {
+//       state.formData = action.payload
+//       state.phoneNumber = action.payload.phone
+//     },
+//     clearError: (state) => {
+//       state.error = null
+//     },
+//     resetRegistration: (state) => {
+//       return initialState
+//     },
+//     incrementVerificationAttempts: (state) => {
+//       state.verificationAttempts += 1
+//     },
+//   },
+//   extraReducers: (builder) => {
+//     builder
+//       // Send verification code
+//       .addCase(sendPhoneVerification.pending, (state) => {
+//         state.isLoading = true
+//         state.error = null
+//       })
+//       .addCase(sendPhoneVerification.fulfilled, (state) => {
+//         state.isLoading = false
+//         state.isCodeSent = true
+//       })
+//       .addCase(sendPhoneVerification.rejected, (state, action) => {
+//         state.isLoading = false
+//         state.error = action.payload as string
+//       })
+//       // Verify code
+//       .addCase(verifyPhoneCode.pending, (state) => {
+//         state.isLoading = true
+//         state.error = null
+//       })
+//       .addCase(verifyPhoneCode.fulfilled, (state) => {
+//         state.isLoading = false
+//         // Handle successful registration
+//       })
+//       .addCase(verifyPhoneCode.rejected, (state, action) => {
+//         state.isLoading = false
+//         state.error = action.payload as string
+//         state.verificationAttempts += 1
+//       })
+//   },
+// })
+
+// export const { setFormData, clearError, resetRegistration, incrementVerificationAttempts } = registrationSlice.actions
+// export default registrationSlice.reducer
+</file>
+
+<file path="utils/api.ts">
+// src/utils/api.ts
+import axios from "axios";
+import { store } from "@/store";
+import { refreshToken as refreshTokenApi } from "@/api/auth";
+import { setTokens, logout } from "@/store/slices/authSlice";
+
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      error.response.data?.code === "token_not_valid" &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true;
+      if (isRefreshing) {
+        return new Promise(function (resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers["Authorization"] = "Bearer " + token;
+            return api(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+      isRefreshing = true;
+      const refresh = localStorage.getItem("refresh");
+      if (!refresh) {
+        store.dispatch(logout());
+        isRefreshing = false;
+        return Promise.reject(error);
+      }
+      try {
+        const data = await refreshTokenApi(refresh);
+        store.dispatch(
+          setTokens({ access: data.access, refresh: data.refresh || refresh })
+        );
+        localStorage.setItem("access", data.access);
+        if (data.refresh) localStorage.setItem("refresh", data.refresh);
+        api.defaults.headers["Authorization"] = "Bearer " + data.access;
+        processQueue(null, data.access);
+        originalRequest.headers["Authorization"] = "Bearer " + data.access;
+        return api(originalRequest);
+      } catch (err) {
+        processQueue(err, null);
+        store.dispatch(logout());
+        return Promise.reject(err);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+export { api };
+</file>
+
+</files>
