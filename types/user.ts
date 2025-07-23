@@ -1,11 +1,13 @@
+export interface MedicalSpeciality {
+  id: number;
+  name: string;
+  code: string;
+  description: string;
+  order: number;
+}
+
 export interface DoctorProfile {
-  specialty: {
-    id: number;
-    name: string;
-    code: string;
-    description: string;
-    order: number;
-  };
+  specialty: MedicalSpeciality;
   specialty_id: number;
   license_number: string;
   experience_years: number;

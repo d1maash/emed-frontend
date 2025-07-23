@@ -41,6 +41,7 @@ The content is organized as follows:
 </file_summary>
 
 <directory_structure>
+api/application.ts
 api/auth.ts
 api/coordinator.ts
 api/recruit.ts
@@ -54,6 +55,7 @@ app/(dashboard)/coordinator/conscripts/queue/[iin]/page.tsx
 app/(dashboard)/coordinator/conscripts/queue/page.tsx
 store/hooks.ts
 store/index.ts
+store/slices/applicationSlice.ts
 store/slices/authSlice.ts
 store/slices/coordinatorDashboardSlice.ts
 store/slices/recruitDashboardSlice.ts
@@ -68,6 +70,283 @@ utils/phoneUtils.ts
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="api/application.ts">
+import { api } from "@/utils/api";
+import { User } from "@/types/user";
+
+export interface Application {
+  id: number;
+  conscript_iin: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  lmo_id?: number;
+}
+
+export interface LMO {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+}
+
+export interface CreateApplicationResponse {
+  application: Application;
+  lmo: LMO;
+  message: string;
+}
+
+export const createApplicationByCoordinator = async (
+  iin: string,
+  access: string
+): Promise<CreateApplicationResponse> => {
+  const response = await api.post(
+    `/api/applications/create_by_coordinator/`,
+    { iin },
+    {
+      headers: {
+        Authorization: `Bearer ${access}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  return response.data;
+};
+
+export const sendToMedical = async (
+  applicationId: number,
+  access: string
+): Promise<{ success: boolean; message: string }> => {
+  const response = await api.post(
+    `/api/applications/${applicationId}/send_to_medical/`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${access}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  return response.data;
+};
+</file>
+
+<file path="store/slices/applicationSlice.ts">
+// store/slices/applicationSlice.ts
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  createApplicationByCoordinator as createApplicationApi,
+  sendToMedical as sendToMedicalApi,
+  Application,
+  LMO,
+  CreateApplicationResponse,
+} from "@/api/application";
+
+interface ApplicationState {
+  currentApplication: Application | null;
+  currentLMO: LMO | null;
+  loading: boolean;
+  error: string | null;
+  sendingToMedical: boolean;
+  sentToMedical: boolean;
+}
+
+const initialState: ApplicationState = {
+  currentApplication: null,
+  currentLMO: null,
+  loading: false,
+  error: null,
+  sendingToMedical: false,
+  sentToMedical: false,
+};
+
+export const createApplicationByCoordinator = createAsyncThunk(
+  "application/createByCoordinator",
+  async (
+    { iin, access }: { iin: string; access: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      return await createApplicationApi(iin, access);
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || "Ошибка создания заявки"
+      );
+    }
+  }
+);
+
+export const sendToMedical = createAsyncThunk(
+  "application/sendToMedical",
+  async (
+    { applicationId, access }: { applicationId: number; access: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      return await sendToMedicalApi(applicationId, access);
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || "Ошибка отправки на медосмотр"
+      );
+    }
+  }
+);
+
+const applicationSlice = createSlice({
+  name: "application",
+  initialState,
+  reducers: {
+    clearApplication: (state) => {
+      state.currentApplication = null;
+      state.currentLMO = null;
+      state.error = null;
+      state.sentToMedical = false;
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      // Create application
+      .addCase(createApplicationByCoordinator.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createApplicationByCoordinator.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentApplication = action.payload.application;
+        state.currentLMO = action.payload.lmo;
+      })
+      .addCase(createApplicationByCoordinator.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Send to medical
+      .addCase(sendToMedical.pending, (state) => {
+        state.sendingToMedical = true;
+        state.error = null;
+      })
+      .addCase(sendToMedical.fulfilled, (state) => {
+        state.sendingToMedical = false;
+        state.sentToMedical = true;
+      })
+      .addCase(sendToMedical.rejected, (state, action) => {
+        state.sendingToMedical = false;
+        state.error = action.payload as string;
+      });
+  },
+});
+
+export const { clearApplication, clearError } = applicationSlice.actions;
+export default applicationSlice.reducer;
+</file>
+
+<file path="types/registration.ts">
+// src/types/registration.ts
+export interface RegistrationData {
+  lastName: string
+  firstName: string
+  middleName: string
+  iin: string
+  birthDate: string
+  phone: string
+  email?: string
+  password: string
+  confirmPassword: string
+  recaptchaToken: string
+}
+
+export interface VerificationData {
+  phone: string
+  code: string
+}
+
+export interface RecaptchaVerificationResponse {
+  success: boolean
+  challenge_ts?: string
+  hostname?: string
+  'error-codes'?: string[]
+}
+</file>
+
+<file path="api/auth.ts">
+import { api } from "@/utils/api";
+
+export const login = async (data: { iin: string; password: string }) => {
+  const response = await api.post(`/api/users/auth/login/`, data, {
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.data;
+};
+
+export const getMe = async (access: string) => {
+  const response = await api.get(`/api/users/me/`, {
+    headers: {
+      Authorization: `Bearer ${access}`,
+    },
+  });
+  return response.data;
+};
+
+export const ecpLogin = async (data: {
+  p12_base64: string;
+  password: string;
+}) => {
+  const response = await api.post(`/api/users/auth/ecp-login/`, data, {
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.data;
+};
+
+export const refreshToken = async (refresh: string) => {
+  const response = await api.post(
+    `/api/users/auth/refresh/`,
+    { refresh },
+    {
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+  return response.data;
+};
+
+export const logout = async (access: string) => {
+  return api.post(
+    `/api/users/auth/logout/`,
+    {},
+    {
+      headers: { Authorization: `Bearer ${access}` },
+    }
+  );
+};
+</file>
+
+<file path="api/coordinator.ts">
+import { api } from "@/utils/api";
+
+export const getCoordinatorDashboard = async (access: string) => {
+  const response = await api.get(`/api/users/dashboard/coordinator/`, {
+    headers: {
+      Authorization: `Bearer ${access}`,
+    },
+  });
+  return response.data;
+};
+</file>
+
+<file path="api/recruit.ts">
+import { api } from "@/utils/api";
+
+export const getRecruitDashboard = async (access: string) => {
+  const response = await api.get(`/api/users/dashboard/conscript/`, {
+    headers: {
+      Authorization: `Bearer ${access}`,
+    },
+  });
+  return response.data;
+};
+</file>
 
 <file path="api/search.ts">
 import { User } from "@/types/user";
@@ -177,252 +456,6 @@ export const searchDoctor = async (
     }
     throw new Error(error.response?.data?.message || "Доктор не найден");
   }
-};
-</file>
-
-<file path="store/slices/searchSlice.ts">
-// store/slices/searchSlice.ts
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import {
-  searchUser as searchUserApi,
-  searchConscript as searchConscriptApi,
-  searchCoordinator as searchCoordinatorApi,
-  SearchUserParams,
-} from "@/api/search";
-import { User } from "@/types/user";
-
-interface SearchState {
-  searchResults: User | null;
-  loading: boolean;
-  error: string | null;
-  lastSearchParams: SearchUserParams | null;
-}
-
-const initialState: SearchState = {
-  searchResults: null,
-  loading: false,
-  error: null,
-  lastSearchParams: null,
-};
-
-export const searchUser = createAsyncThunk(
-  "search/searchUser",
-  async (
-    { params, access }: { params: SearchUserParams; access: string },
-    { rejectWithValue }
-  ) => {
-    try {
-      const res = await searchUserApi(params, access);
-      return { results: res, params };
-    } catch (err: any) {
-      return rejectWithValue(
-        err?.response?.data?.message ||
-          err.message ||
-          "Ошибка поиска пользователя"
-      );
-    }
-  }
-);
-
-export const searchConscript = createAsyncThunk(
-  "search/searchConscript",
-  async (
-    { iin, access }: { iin: string; access: string },
-    { rejectWithValue }
-  ) => {
-    try {
-      const res = await searchConscriptApi(iin, access);
-      return { results: res, params: { iin, role: "conscript" as const } };
-    } catch (err: any) {
-      return rejectWithValue(err.message || "Призывник не найден");
-    }
-  }
-);
-
-export const searchCoordinator = createAsyncThunk(
-  "search/searchCoordinator",
-  async (
-    { iin, access }: { iin: string; access: string },
-    { rejectWithValue }
-  ) => {
-    try {
-      const res = await searchCoordinatorApi(iin, access);
-      return { results: res, params: { iin, role: "coordinator" as const } };
-    } catch (err: any) {
-      return rejectWithValue(err.message || "Координатор не найден");
-    }
-  }
-);
-
-const searchSlice = createSlice({
-  name: "search",
-  initialState,
-  reducers: {
-    clearSearchResults: (state) => {
-      state.searchResults = null;
-      state.error = null;
-      state.lastSearchParams = null;
-    },
-    clearError: (state) => {
-      state.error = null;
-    },
-  },
-  extraReducers: (builder) => {
-    builder
-      // Search user
-      .addCase(searchUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(searchUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.searchResults = action.payload.results;
-        state.lastSearchParams = action.payload.params;
-      })
-      .addCase(searchUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-        state.searchResults = null;
-      })
-      // Search conscript
-      .addCase(searchConscript.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(searchConscript.fulfilled, (state, action) => {
-        state.loading = false;
-        state.searchResults = action.payload.results;
-        state.lastSearchParams = action.payload.params;
-      })
-      .addCase(searchConscript.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-        state.searchResults = null;
-      })
-      // Search coordinator
-      .addCase(searchCoordinator.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(searchCoordinator.fulfilled, (state, action) => {
-        state.loading = false;
-        state.searchResults = action.payload.results;
-        state.lastSearchParams = action.payload.params;
-      })
-      .addCase(searchCoordinator.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-        state.searchResults = null;
-      });
-  },
-});
-
-export const { clearSearchResults, clearError } = searchSlice.actions;
-export default searchSlice.reducer;
-</file>
-
-<file path="types/registration.ts">
-// src/types/registration.ts
-export interface RegistrationData {
-  lastName: string
-  firstName: string
-  middleName: string
-  iin: string
-  birthDate: string
-  phone: string
-  email?: string
-  password: string
-  confirmPassword: string
-  recaptchaToken: string
-}
-
-export interface VerificationData {
-  phone: string
-  code: string
-}
-
-export interface RecaptchaVerificationResponse {
-  success: boolean
-  challenge_ts?: string
-  hostname?: string
-  'error-codes'?: string[]
-}
-</file>
-
-<file path="api/auth.ts">
-import { api } from "@/utils/api";
-
-export const login = async (data: { iin: string; password: string }) => {
-  const response = await api.post(`/api/users/auth/login/`, data, {
-    headers: { "Content-Type": "application/json" },
-  });
-  return response.data;
-};
-
-export const getMe = async (access: string) => {
-  const response = await api.get(`/api/users/me/`, {
-    headers: {
-      Authorization: `Bearer ${access}`,
-    },
-  });
-  return response.data;
-};
-
-export const ecpLogin = async (data: {
-  p12_base64: string;
-  password: string;
-}) => {
-  const response = await api.post(`/api/users/auth/ecp-login/`, data, {
-    headers: { "Content-Type": "application/json" },
-  });
-  return response.data;
-};
-
-export const refreshToken = async (refresh: string) => {
-  const response = await api.post(
-    `/api/users/auth/refresh/`,
-    { refresh },
-    {
-      headers: { "Content-Type": "application/json" },
-    }
-  );
-  return response.data;
-};
-
-export const logout = async (access: string) => {
-  return api.post(
-    `/api/users/auth/logout/`,
-    {},
-    {
-      headers: { Authorization: `Bearer ${access}` },
-    }
-  );
-};
-</file>
-
-<file path="api/coordinator.ts">
-import { api } from "@/utils/api";
-
-export const getCoordinatorDashboard = async (access: string) => {
-  const response = await api.get(`/api/users/dashboard/coordinator/`, {
-    headers: {
-      Authorization: `Bearer ${access}`,
-    },
-  });
-  return response.data;
-};
-</file>
-
-<file path="api/recruit.ts">
-import { api } from "@/utils/api";
-
-export const getRecruitDashboard = async (access: string) => {
-  const response = await api.get(`/api/users/dashboard/conscript/`, {
-    headers: {
-      Authorization: `Bearer ${access}`,
-    },
-  });
-  return response.data;
 };
 </file>
 
@@ -856,92 +889,6 @@ const CoordinatorConscriptsPage = () => {
 export default CoordinatorConscriptsPage;
 </file>
 
-<file path="app/(dashboard)/coordinator/conscripts/queue/[iin]/page.tsx">
-"use client";
-
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  clearError,
-  clearSearchResults,
-  searchConscript,
-} from "@/store/slices/searchSlice";
-import { User } from "@/types/user";
-import { api } from "@/utils/api";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-
-import { z } from "zod";
-
-const searchSchema = z.object({
-  iin: z
-    .string()
-    .min(12, "ИИН должен содержать 12 цифр")
-    .max(12, "ИИН должен содержать 12 цифр")
-    .regex(/^\d+$/, "ИИН должен содержать только цифры"),
-});
-
-const ConscriptQueuePage = () => {
-  // const { iin } = useParams();
-
-  const [iin, setIin] = useState("000000000001");
-
-  const dispatch = useAppDispatch();
-  const { searchResults, loading, error } = useAppSelector(
-    (state) => state.search
-  );
-  const { access } = useAppSelector((state) => state.auth);
-
-  const [validationError, setValidationError] = useState("");
-
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      searchSchema.parse({ iin });
-      setValidationError("");
-
-      if (access) {
-        dispatch(clearError());
-        await dispatch(searchConscript({ iin, access }));
-      }
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        setValidationError(error.errors[0].message);
-      }
-    }
-  };
-
-  const handleClear = () => {
-    dispatch(clearSearchResults());
-    setIin("");
-    setValidationError("");
-  };
-
-  if (loading) {
-    return <div>LOADINGЗагрузка данных...</div>;
-  }
-
-  if (error) {
-    return <div style={{ color: "red" }}>ERROR{error}</div>;
-  }
-
-  return (
-    <div>
-      {searchResults?.first_name}
-      <button
-        onClick={(e) => {
-          handleSearch(e);
-        }}
-      >
-        Search
-      </button>
-    </div>
-  );
-};
-
-export default ConscriptQueuePage;
-</file>
-
 <file path="app/(dashboard)/coordinator/conscripts/queue/page.tsx">
 "use client";
 
@@ -1225,6 +1172,147 @@ export default recruitDashboardSlice.reducer;
 // export default registrationSlice.reducer
 </file>
 
+<file path="store/slices/searchSlice.ts">
+// store/slices/searchSlice.ts
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import {
+  searchUser as searchUserApi,
+  searchConscript as searchConscriptApi,
+  searchCoordinator as searchCoordinatorApi,
+  SearchUserParams,
+} from "@/api/search";
+import { User } from "@/types/user";
+
+interface SearchState {
+  searchResults: User | null;
+  loading: boolean;
+  error: string | null;
+  lastSearchParams: SearchUserParams | null;
+}
+
+const initialState: SearchState = {
+  searchResults: null,
+  loading: false,
+  error: null,
+  lastSearchParams: null,
+};
+
+export const searchUser = createAsyncThunk(
+  "search/searchUser",
+  async (
+    { params, access }: { params: SearchUserParams; access: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const res = await searchUserApi(params, access);
+      return { results: res, params };
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err.message ||
+          "Ошибка поиска пользователя"
+      );
+    }
+  }
+);
+
+export const searchConscript = createAsyncThunk(
+  "search/searchConscript",
+  async (
+    { iin, access }: { iin: string; access: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const res = await searchConscriptApi(iin, access);
+      return { results: res, params: { iin, role: "conscript" as const } };
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Призывник не найден");
+    }
+  }
+);
+
+export const searchCoordinator = createAsyncThunk(
+  "search/searchCoordinator",
+  async (
+    { iin, access }: { iin: string; access: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const res = await searchCoordinatorApi(iin, access);
+      return { results: res, params: { iin, role: "coordinator" as const } };
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Координатор не найден");
+    }
+  }
+);
+
+const searchSlice = createSlice({
+  name: "search",
+  initialState,
+  reducers: {
+    clearSearchResults: (state) => {
+      state.searchResults = null;
+      state.error = null;
+      state.lastSearchParams = null;
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      // Search user
+      .addCase(searchUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(searchUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.searchResults = action.payload.results;
+        state.lastSearchParams = action.payload.params;
+      })
+      .addCase(searchUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.searchResults = null;
+      })
+      // Search conscript
+      .addCase(searchConscript.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(searchConscript.fulfilled, (state, action) => {
+        state.loading = false;
+        state.searchResults = action.payload.results;
+        state.lastSearchParams = action.payload.params;
+      })
+      .addCase(searchConscript.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.searchResults = null;
+      })
+      // Search coordinator
+      .addCase(searchCoordinator.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(searchCoordinator.fulfilled, (state, action) => {
+        state.loading = false;
+        state.searchResults = action.payload.results;
+        state.lastSearchParams = action.payload.params;
+      })
+      .addCase(searchCoordinator.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.searchResults = null;
+      });
+  },
+});
+
+export const { clearSearchResults, clearError } = searchSlice.actions;
+export default searchSlice.reducer;
+</file>
+
 <file path="types/user.ts">
 export interface DoctorProfile {
   specialty: {
@@ -1389,44 +1477,90 @@ export function maskPhoneNumber(phone: string): string {
 }
 </file>
 
-<file path="store/index.ts">
-import { configureStore } from "@reduxjs/toolkit";
-import authReducer, { setTokens, logout } from "./slices/authSlice";
-import recruitDashboardReducer from "./slices/recruitDashboardSlice";
-import coordinatorDashboardReducer from "./slices/coordinatorDashboardSlice";
-import searchReducer from "./slices/searchSlice";
-import { api } from "../utils/api";
-import { setupInterceptors } from "../utils/apiInterceptors";
-import { refreshToken } from "../api/auth";
+<file path="app/(dashboard)/coordinator/conscripts/queue/[iin]/page.tsx">
+"use client";
 
-export const store = configureStore({
-  reducer: {
-    auth: authReducer,
-    recruitDashboard: recruitDashboardReducer,
-    coordinatorDashboard: coordinatorDashboardReducer,
-    search: searchReducer,
-  },
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  clearError,
+  clearSearchResults,
+  searchConscript,
+} from "@/store/slices/searchSlice";
+import { User } from "@/types/user";
+import { api } from "@/utils/api";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { z } from "zod";
+
+const searchSchema = z.object({
+  iin: z
+    .string()
+    .min(12, "ИИН должен содержать 12 цифр")
+    .max(12, "ИИН должен содержать 12 цифр")
+    .regex(/^\d+$/, "ИИН должен содержать только цифры"),
 });
 
-// Настройка интерцепторов после создания store
-setupInterceptors(
-  api,
-  (access: string, refresh?: string) => {
-    store.dispatch(
-      setTokens({
-        access,
-        refresh: refresh || store.getState().auth.refresh || "",
-      })
-    );
-  },
-  () => {
-    store.dispatch(logout());
-  },
-  refreshToken
-);
+const ConscriptQueuePage = () => {
+  // const { iin } = useParams();
 
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+  const [iin, setIin] = useState("000000000001");
+
+  const dispatch = useAppDispatch();
+  const { searchResults, loading, error } = useAppSelector(
+    (state) => state.search
+  );
+  const { access } = useAppSelector((state) => state.auth);
+
+  const [validationError, setValidationError] = useState("");
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      searchSchema.parse({ iin });
+      setValidationError("");
+
+      if (access) {
+        dispatch(clearError());
+        await dispatch(searchConscript({ iin, access }));
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setValidationError(error.errors[0].message);
+      }
+    }
+  };
+
+  const handleClear = () => {
+    dispatch(clearSearchResults());
+    setIin("");
+    setValidationError("");
+  };
+
+  if (loading) {
+    return <div>Загрузка данных...</div>;
+  }
+
+  if (error) {
+    return <div style={{ color: "red" }}>{error}</div>;
+  }
+
+  return (
+    <div>
+      {searchResults?.first_name}
+      <button
+        onClick={(e) => {
+          handleSearch(e);
+        }}
+      >
+        Search
+      </button>
+    </div>
+  );
+};
+
+export default ConscriptQueuePage;
 </file>
 
 <file path="store/slices/authSlice.ts">
@@ -1593,6 +1727,46 @@ const authSlice = createSlice({
 
 export const { logout, setTokens, rehydrateAuth } = authSlice.actions;
 export default authSlice.reducer;
+</file>
+
+<file path="store/index.ts">
+import { configureStore } from "@reduxjs/toolkit";
+import authReducer, { setTokens, logout } from "./slices/authSlice";
+import recruitDashboardReducer from "./slices/recruitDashboardSlice";
+import coordinatorDashboardReducer from "./slices/coordinatorDashboardSlice";
+import searchReducer from "./slices/searchSlice";
+import { api } from "../utils/api";
+import { setupInterceptors } from "../utils/apiInterceptors";
+import { refreshToken } from "../api/auth";
+
+export const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    recruitDashboard: recruitDashboardReducer,
+    coordinatorDashboard: coordinatorDashboardReducer,
+    search: searchReducer,
+  },
+});
+
+// Настройка интерцепторов после создания store
+setupInterceptors(
+  api,
+  (access: string, refresh?: string) => {
+    store.dispatch(
+      setTokens({
+        access,
+        refresh: refresh || store.getState().auth.refresh || "",
+      })
+    );
+  },
+  () => {
+    store.dispatch(logout());
+  },
+  refreshToken
+);
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
 </file>
 
 <file path="utils/api.ts">
