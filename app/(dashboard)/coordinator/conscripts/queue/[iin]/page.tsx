@@ -1,54 +1,83 @@
 "use client";
 
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  clearError,
+  clearSearchResults,
+  searchConscript,
+} from "@/store/slices/searchSlice";
 import { User } from "@/types/user";
 import { api } from "@/utils/api";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { z } from "zod";
+
+const searchSchema = z.object({
+  iin: z
+    .string()
+    .min(12, "ИИН должен содержать 12 цифр")
+    .max(12, "ИИН должен содержать 12 цифр")
+    .regex(/^\d+$/, "ИИН должен содержать только цифры"),
+});
+
 const ConscriptQueuePage = () => {
-  const { iin } = useParams();
+  // const { iin } = useParams();
 
-  const [conscript, setConscript] = useState<User>();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>("");
+  const [iin, setIin] = useState("000000000001");
 
-  useEffect(() => {
-    if (!iin) return;
+  const dispatch = useAppDispatch();
+  const { searchResults, loading, error } = useAppSelector(
+    (state) => state.search
+  );
+  const { access } = useAppSelector((state) => state.auth);
 
-    const fetchConscriptData = async () => {
-      try {
-        const response = await api.post(
-          "http://188.244.115.175/api/users/search/",
-          {
-            iin: iin,
-          }
-        ); // Проверка на успешность и наличие данных
+  const [validationError, setValidationError] = useState("");
 
-        if (response.status === 200 && response.data) {
-          setConscript(response.data);
-        } else {
-          setError("Данные не найдены.");
-        }
-      } catch (err) {
-        console.error(err);
-        setError("Ошибка при загрузке данных призывника.");
-      } finally {
-        setLoading(false);
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      searchSchema.parse({ iin });
+      setValidationError("");
+
+      if (access) {
+        dispatch(clearError());
+        await dispatch(searchConscript({ iin, access }));
       }
-    };
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setValidationError(error.errors[0].message);
+      }
+    }
+  };
 
-    fetchConscriptData();
-  }, [iin]);
+  const handleClear = () => {
+    dispatch(clearSearchResults());
+    setIin("");
+    setValidationError("");
+  };
 
   if (loading) {
-    return <div>Загрузка данных...</div>;
+    return <div>LOADINGЗагрузка данных...</div>;
   }
 
   if (error) {
-    return <div style={{ color: "red" }}>{error}</div>;
+    return <div style={{ color: "red" }}>ERROR{error}</div>;
   }
 
-  return <div></div>;
+  return (
+    <div>
+      {searchResults?.first_name}
+      <button
+        onClick={(e) => {
+          handleSearch(e);
+        }}
+      >
+        Search
+      </button>
+    </div>
+  );
 };
 
 export default ConscriptQueuePage;

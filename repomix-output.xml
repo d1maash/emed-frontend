@@ -32,7 +32,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: store/**, api/**, utils/**
+- Only files matching these patterns are included: store/**, api/**, utils/**, types/**, app/(dashboard)/coordinator/conscripts/**
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -44,18 +44,361 @@ The content is organized as follows:
 api/auth.ts
 api/coordinator.ts
 api/recruit.ts
+api/search.ts
+app/(dashboard)/coordinator/conscripts/_components/conscripts-table/columns.tsx
+app/(dashboard)/coordinator/conscripts/_components/conscripts-table/CoordinatorConscriptsTable.tsx
+app/(dashboard)/coordinator/conscripts/_components/conscripts-table/data.ts
+app/(dashboard)/coordinator/conscripts/_components/conscripts-table/types.ts
+app/(dashboard)/coordinator/conscripts/page.tsx
+app/(dashboard)/coordinator/conscripts/queue/[iin]/page.tsx
+app/(dashboard)/coordinator/conscripts/queue/page.tsx
 store/hooks.ts
 store/index.ts
 store/slices/authSlice.ts
 store/slices/coordinatorDashboardSlice.ts
 store/slices/recruitDashboardSlice.ts
 store/slices/registrationSlice.ts
+store/slices/searchSlice.ts
+types/registration.ts
+types/user.ts
 utils/api.ts
+utils/apiInterceptors.ts
 utils/phoneUtils.ts
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="api/search.ts">
+import { User } from "@/types/user";
+import { api } from "@/utils/api";
+
+export interface SearchUserParams {
+  iin: string;
+  role?: "conscript" | "coordinator" | "doctor" | "commission";
+}
+
+export const searchUser = async (
+  iin: SearchUserParams,
+  access: string
+): Promise<User> => {
+  const response = await api.post(
+    `/api/users/search/`,
+    { iin },
+    {
+      headers: {
+        Authorization: `Bearer ${access}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  return response.data;
+};
+
+export const searchConscript = async (
+  iin: string,
+  access: string
+): Promise<User> => {
+  try {
+    const response = await api.post(
+      `/api/users/search/`,
+      { iin },
+      {
+        headers: {
+          Authorization: `Bearer ${access}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.data.role !== "conscript") {
+      throw new Error("Пользователь не является призывником");
+    }
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error("Призывник не найден");
+    }
+    throw new Error(error.response?.data?.message || "Призывник не найден");
+  }
+};
+
+export const searchCoordinator = async (
+  iin: string,
+  access: string
+): Promise<User> => {
+  try {
+    const response = await api.post(
+      `/api/users/search/`,
+      { iin },
+      {
+        headers: {
+          Authorization: `Bearer ${access}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.data.role !== "coordinator") {
+      throw new Error("Пользователь не является координатором");
+    }
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error("Координатор не найден");
+    }
+    throw new Error(error.response?.data?.message || "Координатор не найден");
+  }
+};
+
+export const searchDoctor = async (
+  iin: string,
+  access: string
+): Promise<User> => {
+  try {
+    const response = await api.post(
+      `/api/users/search/`,
+      { iin },
+      {
+        headers: {
+          Authorization: `Bearer ${access}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.data.role !== "doctor") {
+      throw new Error("Пользователь не является доктором");
+    }
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error("Доктор не найден");
+    }
+    throw new Error(error.response?.data?.message || "Доктор не найден");
+  }
+};
+</file>
+
+<file path="store/slices/searchSlice.ts">
+// store/slices/searchSlice.ts
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import {
+  searchUser as searchUserApi,
+  searchConscript as searchConscriptApi,
+  searchCoordinator as searchCoordinatorApi,
+  SearchUserParams,
+} from "@/api/search";
+import { User } from "@/types/user";
+
+interface SearchState {
+  searchResults: User | null;
+  loading: boolean;
+  error: string | null;
+  lastSearchParams: SearchUserParams | null;
+}
+
+const initialState: SearchState = {
+  searchResults: null,
+  loading: false,
+  error: null,
+  lastSearchParams: null,
+};
+
+export const searchUser = createAsyncThunk(
+  "search/searchUser",
+  async (
+    { params, access }: { params: SearchUserParams; access: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const res = await searchUserApi(params, access);
+      return { results: res, params };
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ||
+          err.message ||
+          "Ошибка поиска пользователя"
+      );
+    }
+  }
+);
+
+export const searchConscript = createAsyncThunk(
+  "search/searchConscript",
+  async (
+    { iin, access }: { iin: string; access: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const res = await searchConscriptApi(iin, access);
+      return { results: res, params: { iin, role: "conscript" as const } };
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Призывник не найден");
+    }
+  }
+);
+
+export const searchCoordinator = createAsyncThunk(
+  "search/searchCoordinator",
+  async (
+    { iin, access }: { iin: string; access: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const res = await searchCoordinatorApi(iin, access);
+      return { results: res, params: { iin, role: "coordinator" as const } };
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Координатор не найден");
+    }
+  }
+);
+
+const searchSlice = createSlice({
+  name: "search",
+  initialState,
+  reducers: {
+    clearSearchResults: (state) => {
+      state.searchResults = null;
+      state.error = null;
+      state.lastSearchParams = null;
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      // Search user
+      .addCase(searchUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(searchUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.searchResults = action.payload.results;
+        state.lastSearchParams = action.payload.params;
+      })
+      .addCase(searchUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.searchResults = null;
+      })
+      // Search conscript
+      .addCase(searchConscript.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(searchConscript.fulfilled, (state, action) => {
+        state.loading = false;
+        state.searchResults = action.payload.results;
+        state.lastSearchParams = action.payload.params;
+      })
+      .addCase(searchConscript.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.searchResults = null;
+      })
+      // Search coordinator
+      .addCase(searchCoordinator.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(searchCoordinator.fulfilled, (state, action) => {
+        state.loading = false;
+        state.searchResults = action.payload.results;
+        state.lastSearchParams = action.payload.params;
+      })
+      .addCase(searchCoordinator.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.searchResults = null;
+      });
+  },
+});
+
+export const { clearSearchResults, clearError } = searchSlice.actions;
+export default searchSlice.reducer;
+</file>
+
+<file path="types/registration.ts">
+// src/types/registration.ts
+export interface RegistrationData {
+  lastName: string
+  firstName: string
+  middleName: string
+  iin: string
+  birthDate: string
+  phone: string
+  email?: string
+  password: string
+  confirmPassword: string
+  recaptchaToken: string
+}
+
+export interface VerificationData {
+  phone: string
+  code: string
+}
+
+export interface RecaptchaVerificationResponse {
+  success: boolean
+  challenge_ts?: string
+  hostname?: string
+  'error-codes'?: string[]
+}
+</file>
+
+<file path="api/auth.ts">
+import { api } from "@/utils/api";
+
+export const login = async (data: { iin: string; password: string }) => {
+  const response = await api.post(`/api/users/auth/login/`, data, {
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.data;
+};
+
+export const getMe = async (access: string) => {
+  const response = await api.get(`/api/users/me/`, {
+    headers: {
+      Authorization: `Bearer ${access}`,
+    },
+  });
+  return response.data;
+};
+
+export const ecpLogin = async (data: {
+  p12_base64: string;
+  password: string;
+}) => {
+  const response = await api.post(`/api/users/auth/ecp-login/`, data, {
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.data;
+};
+
+export const refreshToken = async (refresh: string) => {
+  const response = await api.post(
+    `/api/users/auth/refresh/`,
+    { refresh },
+    {
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+  return response.data;
+};
+
+export const logout = async (access: string) => {
+  return api.post(
+    `/api/users/auth/logout/`,
+    {},
+    {
+      headers: { Authorization: `Bearer ${access}` },
+    }
+  );
+};
+</file>
 
 <file path="api/coordinator.ts">
 import { api } from "@/utils/api";
@@ -68,6 +411,608 @@ export const getCoordinatorDashboard = async (access: string) => {
   });
   return response.data;
 };
+</file>
+
+<file path="api/recruit.ts">
+import { api } from "@/utils/api";
+
+export const getRecruitDashboard = async (access: string) => {
+  const response = await api.get(`/api/users/dashboard/conscript/`, {
+    headers: {
+      Authorization: `Bearer ${access}`,
+    },
+  });
+  return response.data;
+};
+</file>
+
+<file path="app/(dashboard)/coordinator/conscripts/_components/conscripts-table/columns.tsx">
+import { ColumnDef } from "@tanstack/react-table";
+import { Conscript } from "./types";
+import { Badge } from "@/components/ui/badge";
+import { Pencil, Eye, X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
+
+export const columns: ColumnDef<Conscript>[] = [
+  {
+    accessorKey: "id",
+    header: "#",
+    cell: ({ row }) => row.original.id,
+    size: 36,
+    enableSorting: false,
+  },
+  {
+    accessorKey: "name",
+    header: "ФИО",
+    cell: ({ row }) => row.original.name,
+    size: 220,
+    enableSorting: true,
+    sortingFn: "alphanumeric",
+  },
+  {
+    accessorKey: "login",
+    header: "Логин",
+    cell: ({ row }) => row.original.login,
+    size: 180,
+    enableSorting: false,
+  },
+  {
+    accessorKey: "militaryId",
+    header: "Военный билет",
+    cell: ({ row }) => row.original.militaryId,
+    size: 180,
+    enableSorting: false,
+  },
+  {
+    accessorKey: "department",
+    header: "Подразделения",
+    cell: ({ row }) => row.original.department,
+    size: 180,
+    enableSorting: false,
+  },
+  {
+    accessorKey: "status",
+    header: "Статус",
+    cell: ({ row }) => (
+      <Badge
+        className={cn(
+          "rounded-full",
+          row.original.status === "Ожидает приема"
+            ? "text-yellow-600 bg-yellow-50 hover:text-white hover:bg-yellow-600"
+            : row.original.status === "Завершено"
+            ? "text-green-600 bg-green-50 hover:text-white hover:bg-green-600"
+            : row.original.status === "Результат готов"
+            ? "text-blue-600 bg-blue-50 hover:text-white hover:bg-blue-600"
+            : "text-gray-600 bg-gray-50 hover:text-white hover:bg-gray-600"
+        )}
+      >
+        {row.original.status}
+      </Badge>
+    ),
+    size: 120,
+    enableSorting: false,
+  },
+  {
+    id: "actions",
+    header: "",
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" className="text-blue-500">
+          <Pencil size={18} />
+        </Button>
+        <Button variant="ghost" size="icon" className="text-gray-500">
+          <Eye size={18} />
+        </Button>
+        <Button variant="ghost" size="icon" className="text-red-500">
+          <X size={18} />
+        </Button>
+      </div>
+    ),
+    size: 80,
+    enableSorting: false,
+  },
+];
+</file>
+
+<file path="app/(dashboard)/coordinator/conscripts/_components/conscripts-table/CoordinatorConscriptsTable.tsx">
+"use client";
+
+import React, { useState } from "react";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  flexRender,
+  SortingState,
+} from "@tanstack/react-table";
+import { columns } from "./columns";
+import { Conscript } from "./types";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface CoordinatorConscriptsTableProps {
+  data: Conscript[];
+}
+
+export const CoordinatorConscriptsTable: React.FC<
+  CoordinatorConscriptsTableProps
+> = ({ data }) => {
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [pageIndex, setPageIndex] = useState(1);
+
+  const pageSize = 10;
+  const pageCount = Math.ceil(data.length / pageSize);
+  const paginatedConscripts = data.slice(
+    (pageIndex - 1) * pageSize,
+    pageIndex * pageSize
+  );
+
+  const table = useReactTable({
+    data: paginatedConscripts,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    manualPagination: true,
+    pageCount,
+  });
+
+  return (
+    <div className="flex flex-col justify-center items-center w-full">
+      <div className="w-full rounded-xl border bg-white overflow-x-auto">
+        <Table className="w-full">
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    style={{ width: header.getSize() }}
+                    className={cn(
+                      header.column.getCanSort() && "cursor-pointer select-none"
+                    )}
+                    onClick={
+                      header.column.getCanSort()
+                        ? header.column.getToggleSortingHandler()
+                        : undefined
+                    }
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                className={row.index % 2 === 1 ? "bg-[#f7faff]" : ""}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      {/* Pagination */}
+      <div className="w-full flex justify-center items-center gap-2 my-4">
+        <button
+          className="w-8 h-8 flex items-center justify-center  text-[--primary-90] disabled:text-[#6B7280] disabled:opacity-50"
+          onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
+          disabled={pageIndex === 1}
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        {Array.from({ length: pageCount }, (_, i) => (
+          <button
+            key={i}
+            className={cn(
+              "w-8 h-8 flex items-center justify-center text-[--primary-90]",
+              pageIndex === i + 1 ? "bg-[--primary-30]" : ""
+            )}
+            onClick={() => setPageIndex(i + 1)}
+          >
+            {i + 1}
+          </button>
+        ))}
+        <button
+          className="w-8 h-8 flex items-center justify-center text-[--primary-90] disabled:text-[#6B7280] disabled:opacity-50"
+          onClick={() => setPageIndex((p) => Math.min(pageCount, p + 1))}
+          disabled={pageIndex === pageCount}
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+};
+</file>
+
+<file path="app/(dashboard)/coordinator/conscripts/_components/conscripts-table/data.ts">
+import { Conscript } from "./types";
+
+export const conscripts: Conscript[] = [
+  {
+    id: 1,
+    name: "Фамилия Имя Отчество",
+    login: "login.kz.army",
+    militaryId: "Lorem Ipsum",
+    department: "Полномочия",
+    status: "Ожидает приема",
+  },
+  {
+    id: 2,
+    name: "Фамилия Имя Отчество",
+    login: "login.kz.army",
+    militaryId: "Lorem Ipsum",
+    department: "Первичный",
+    status: "На приеме",
+  },
+  {
+    id: 3,
+    name: "Фамилия Имя Отчество",
+    login: "login.kz.army",
+    militaryId: "Lorem Ipsum",
+    department: "Первичный",
+    status: "Завершено",
+  },
+  {
+    id: 4,
+    name: "Фамилия Имя Отчество",
+    login: "login.kz.army",
+    militaryId: "Lorem Ipsum",
+    department: "Первичный",
+    status: "На комиссии",
+  },
+  {
+    id: 5,
+    name: "Фамилия Имя Отчество",
+    login: "login.kz.army",
+    militaryId: "Lorem Ipsum",
+    department: "Первичный",
+    status: "На приеме",
+  },
+  {
+    id: 6,
+    name: "Фамилия Имя Отчество",
+    login: "login.kz.army",
+    militaryId: "Lorem Ipsum",
+    department: "Первичный",
+    status: "Результат готов",
+  },
+  {
+    id: 7,
+    name: "Фамилия Имя Отчество",
+    login: "login.kz.army",
+    militaryId: "Lorem Ipsum",
+    department: "Первичный",
+    status: "На приеме",
+  },
+  {
+    id: 8,
+    name: "Фамилия Имя Отчество",
+    login: "login.kz.army",
+    militaryId: "Lorem Ipsum",
+    department: "Первичный",
+    status: "На приеме",
+  },
+  {
+    id: 9,
+    name: "Фамилия Имя Отчество",
+    login: "login.kz.army",
+    militaryId: "Lorem Ipsum",
+    department: "Первичный",
+    status: "Ожидает приема",
+  },
+  {
+    id: 10,
+    name: "Фамилия Имя Отчество",
+    login: "login.kz.army",
+    militaryId: "Lorem Ipsum",
+    department: "Первичный",
+    status: "На приеме",
+  },
+];
+</file>
+
+<file path="app/(dashboard)/coordinator/conscripts/_components/conscripts-table/types.ts">
+export type ConscriptStatus =
+  | "Ожидает приема"
+  | "На приеме"
+  | "Завершено"
+  | "На комиссии"
+  | "Результат готов";
+
+export interface Conscript {
+  id: number;
+  name: string;
+  login: string;
+  militaryId: string;
+  department: string;
+  status: ConscriptStatus;
+}
+</file>
+
+<file path="app/(dashboard)/coordinator/conscripts/page.tsx">
+"use client";
+
+import React, { useState } from "react";
+import { CoordinatorConscriptsTable } from "./_components/conscripts-table/CoordinatorConscriptsTable";
+import { conscripts as conscriptsData } from "./_components/conscripts-table/data";
+import { Conscript } from "./_components/conscripts-table/types";
+import { Input } from "@/components/ui/Input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Download, Plus, Search, SlidersHorizontal } from "lucide-react";
+
+const statuses = [
+  { value: "Ожидает приема", label: "Ожидает приема" },
+  { value: "На приеме", label: "На приеме" },
+  { value: "Завершено", label: "Завершено" },
+  { value: "На комиссии", label: "На комиссии" },
+  { value: "Результат готов", label: "Результат готов" },
+];
+const voenkomats = [
+  { value: "Полномочия", label: "Полномочия" },
+  { value: "Первичный", label: "Первичный" },
+];
+
+const CoordinatorConscriptsPage = () => {
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<string | undefined>(undefined);
+  const [voenkomat, setVoenkomat] = useState<string | undefined>(undefined);
+
+  const filteredConscripts = (conscriptsData as Conscript[]).filter(
+    (c: Conscript) => {
+      const matchesText =
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        String(c.id).includes(search);
+      const matchesStatus = status ? c.status === status : true;
+      const matchesVoenkomat = voenkomat ? c.department === voenkomat : true;
+      return matchesText && matchesStatus && matchesVoenkomat;
+    }
+  );
+
+  return (
+    <div className="w-full flex flex-col gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-4 mb-2">
+        <div className="flex  flex-wrap sm:flex-nowrap items-center gap-3 w-full">
+          <div className="relative w-full sm:w-auto">
+            <Input
+              className="pl-10 min-w-[240px] max-w-xs h-11 rounded-lg border border-gray-200 bg-white w-full"
+              placeholder="Поиск по ФИО или ID"
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          </div>
+          <Select value={status} onValueChange={setStatus}>
+            <SelectTrigger className="h-11 rounded-lg border border-gray-200 bg-white w-auto flex items-center gap-2">
+              <SelectValue placeholder="Статус" />
+              <SlidersHorizontal className="ml-2 w-4 h-4 text-gray-400" />
+            </SelectTrigger>
+            <SelectContent>
+              {statuses.map((status) => (
+                <SelectItem key={status.value} value={status.value}>
+                  {status.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={voenkomat} onValueChange={setVoenkomat}>
+            <SelectTrigger className="h-11 rounded-lg border border-gray-200 bg-white w-auto flex items-center gap-2">
+              <SelectValue placeholder="Военкомат" />
+              <SlidersHorizontal className="ml-2 w-4 h-4 text-gray-400" />
+            </SelectTrigger>
+            <SelectContent>
+              {voenkomats.map((v) => (
+                <SelectItem key={v.value} value={v.value}>
+                  {v.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition">
+            <Download className="w-5 h-5 text-gray-700" />
+          </button>
+          <button className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition">
+            <Plus className="w-5 h-5 text-gray-700" />
+          </button>
+        </div>
+      </div>
+      <CoordinatorConscriptsTable data={filteredConscripts} />
+    </div>
+  );
+};
+
+export default CoordinatorConscriptsPage;
+</file>
+
+<file path="app/(dashboard)/coordinator/conscripts/queue/[iin]/page.tsx">
+"use client";
+
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  clearError,
+  clearSearchResults,
+  searchConscript,
+} from "@/store/slices/searchSlice";
+import { User } from "@/types/user";
+import { api } from "@/utils/api";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { z } from "zod";
+
+const searchSchema = z.object({
+  iin: z
+    .string()
+    .min(12, "ИИН должен содержать 12 цифр")
+    .max(12, "ИИН должен содержать 12 цифр")
+    .regex(/^\d+$/, "ИИН должен содержать только цифры"),
+});
+
+const ConscriptQueuePage = () => {
+  // const { iin } = useParams();
+
+  const [iin, setIin] = useState("000000000001");
+
+  const dispatch = useAppDispatch();
+  const { searchResults, loading, error } = useAppSelector(
+    (state) => state.search
+  );
+  const { access } = useAppSelector((state) => state.auth);
+
+  const [validationError, setValidationError] = useState("");
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      searchSchema.parse({ iin });
+      setValidationError("");
+
+      if (access) {
+        dispatch(clearError());
+        await dispatch(searchConscript({ iin, access }));
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setValidationError(error.errors[0].message);
+      }
+    }
+  };
+
+  const handleClear = () => {
+    dispatch(clearSearchResults());
+    setIin("");
+    setValidationError("");
+  };
+
+  if (loading) {
+    return <div>LOADINGЗагрузка данных...</div>;
+  }
+
+  if (error) {
+    return <div style={{ color: "red" }}>ERROR{error}</div>;
+  }
+
+  return (
+    <div>
+      {searchResults?.first_name}
+      <button
+        onClick={(e) => {
+          handleSearch(e);
+        }}
+      >
+        Search
+      </button>
+    </div>
+  );
+};
+
+export default ConscriptQueuePage;
+</file>
+
+<file path="app/(dashboard)/coordinator/conscripts/queue/page.tsx">
+"use client";
+
+import MyButton from "@/components/myui/MyButton";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/Input";
+import { Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+
+const ConscriptsQueuePage = () => {
+  const [search, onSearch] = useState("");
+  const router = useRouter();
+
+  const onQuery = () => {
+    router.push("/coordinator/conscripts/queue/" + search);
+  };
+
+  return (
+    <div className="w-full flex justify-center">
+      <Card className="w-max flex items-center flex-col p-2">
+        <CardHeader>
+          <CardTitle>Поиск призивника</CardTitle>
+          <CardDescription>
+            Введите ИИН и нажмите кнопку
+            <br /> для перехода на страницу настройки
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="w-full">
+          <div className="relative w-full sm:w-auto">
+            <Input
+              className="pl-10 min-w-[240px] max-w-sm h-11 rounded-lg border border-gray-200 bg-white w-full"
+              placeholder="Поиск по ИИН"
+              type="text"
+              value={search}
+              onChange={(e) => onSearch(e.target.value)}
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          </div>
+        </CardContent>
+        <CardFooter className="w-full">
+          <MyButton
+            onClick={() => {
+              onQuery();
+            }}
+            className="w-full py-3"
+          >
+            Найти
+          </MyButton>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+};
+
+export default ConscriptsQueuePage;
+</file>
+
+<file path="store/hooks.ts">
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import type { RootState, AppDispatch } from "./index";
+
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 </file>
 
 <file path="store/slices/coordinatorDashboardSlice.ts">
@@ -124,235 +1069,6 @@ const coordinatorDashboardSlice = createSlice({
 export default coordinatorDashboardSlice.reducer;
 </file>
 
-<file path="api/auth.ts">
-import { api } from "@/utils/api";
-
-export const login = async (data: { iin: string; password: string }) => {
-  const response = await api.post(`/api/users/auth/login/`, data, {
-    headers: { "Content-Type": "application/json" },
-  });
-  return response.data;
-};
-
-export const getMe = async (access: string) => {
-  const response = await api.get(`/api/users/me/`, {
-    headers: {
-      Authorization: `Bearer ${access}`,
-    },
-  });
-  return response.data;
-};
-
-export const ecpLogin = async (data: {
-  p12_base64: string;
-  password: string;
-}) => {
-  const response = await api.post(`/api/users/auth/ecp-login/`, data, {
-    headers: { "Content-Type": "application/json" },
-  });
-  return response.data;
-};
-
-export const refreshToken = async (refresh: string) => {
-  const response = await api.post(
-    `/api/users/auth/refresh/`,
-    { refresh },
-    {
-      headers: { "Content-Type": "application/json" },
-    }
-  );
-  return response.data;
-};
-
-export const logout = async (access: string) => {
-  return api.post(
-    `/api/users/auth/logout/`,
-    {},
-    {
-      headers: { Authorization: `Bearer ${access}` },
-    }
-  );
-};
-</file>
-
-<file path="api/recruit.ts">
-import { api } from "@/utils/api";
-
-export const getRecruitDashboard = async (access: string) => {
-  const response = await api.get(`/api/users/dashboard/conscript/`, {
-    headers: {
-      Authorization: `Bearer ${access}`,
-    },
-  });
-  return response.data;
-};
-</file>
-
-<file path="store/hooks.ts">
-import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import type { RootState, AppDispatch } from "./index";
-
-export const useAppDispatch = () => useDispatch<AppDispatch>();
-export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
-</file>
-
-<file path="store/slices/authSlice.ts">
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import {
-  login as loginApi,
-  getMe as getMeApi,
-  ecpLogin as ecpLoginApi,
-} from "@/api/auth";
-import type { User } from "@/types/user";
-
-interface AuthState {
-  access: string | null;
-  refresh: string | null;
-  isAuthenticated: boolean;
-  loading: boolean;
-  error: string | null;
-  user: User | null;
-}
-
-const initialState: AuthState = {
-  access: null,
-  refresh: null,
-  isAuthenticated: false,
-  loading: false,
-  error: null,
-  user: null,
-};
-
-export const login = createAsyncThunk(
-  "auth/login",
-  async (data: { iin: string; password: string }, { rejectWithValue }) => {
-    try {
-      const res = await loginApi(data);
-      return res;
-    } catch (err: any) {
-      return rejectWithValue(err?.response?.data?.message || "Ошибка входа");
-    }
-  }
-);
-
-export const getMe = createAsyncThunk(
-  "auth/getMe",
-  async (access: string, { rejectWithValue }) => {
-    try {
-      const res = await getMeApi(access);
-      return res;
-    } catch (err: any) {
-      return rejectWithValue("Ошибка получения пользователя");
-    }
-  }
-);
-
-export const ecpLogin = createAsyncThunk(
-  "auth/ecpLogin",
-  async (
-    data: { p12_base64: string; password: string },
-    { rejectWithValue }
-  ) => {
-    try {
-      const res = await ecpLoginApi(data);
-      return res;
-    } catch (err: any) {
-      return rejectWithValue(
-        err?.response?.data?.message || "Ошибка входа по ЭЦП"
-      );
-    }
-  }
-);
-
-const authSlice = createSlice({
-  name: "auth",
-  initialState,
-  reducers: {
-    logout: (state) => {
-      state.access = null;
-      state.refresh = null;
-      state.isAuthenticated = false;
-      state.error = null;
-      state.user = null;
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
-    },
-    setTokens: (
-      state,
-      action: PayloadAction<{ access: string; refresh: string }>
-    ) => {
-      state.access = action.payload.access;
-      state.refresh = action.payload.refresh;
-      state.isAuthenticated = true;
-    },
-    rehydrateAuth: (state) => {
-      const access =
-        typeof window !== "undefined" ? localStorage.getItem("access") : null;
-      const refresh =
-        typeof window !== "undefined" ? localStorage.getItem("refresh") : null;
-      if (access) {
-        state.access = access;
-        state.isAuthenticated = true;
-      }
-      if (refresh) {
-        state.refresh = refresh;
-      }
-    },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(login.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(login.fulfilled, (state, action) => {
-        state.loading = false;
-        state.access = action.payload.access;
-        state.refresh = action.payload.refresh;
-        state.isAuthenticated = true;
-        localStorage.setItem("access", action.payload.access);
-        localStorage.setItem("refresh", action.payload.refresh);
-      })
-      .addCase(login.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(getMe.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getMe.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload;
-      })
-      .addCase(getMe.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(ecpLogin.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(ecpLogin.fulfilled, (state, action) => {
-        state.loading = false;
-        state.access = action.payload.access;
-        state.refresh = action.payload.refresh;
-        state.user = action.payload.user;
-        state.isAuthenticated = true;
-        localStorage.setItem("access", action.payload.access);
-        localStorage.setItem("refresh", action.payload.refresh);
-      })
-      .addCase(ecpLogin.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      });
-  },
-});
-
-export const { logout, setTokens, rehydrateAuth } = authSlice.actions;
-export default authSlice.reducer;
-</file>
-
 <file path="store/slices/recruitDashboardSlice.ts">
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { getRecruitDashboard as getRecruitDashboardApi } from "@/api/recruit";
@@ -405,54 +1121,6 @@ const recruitDashboardSlice = createSlice({
 });
 
 export default recruitDashboardSlice.reducer;
-</file>
-
-<file path="utils/phoneUtils.ts">
-export function maskPhoneNumber(phone: string): string {
-  if (!phone) return "";
-
-  // Remove all non-digit characters except +
-  const cleaned = phone.replace(/[^\d+]/g, "");
-
-  if (cleaned.startsWith("+7") && cleaned.length === 12) {
-    // +77771234567 -> +7777***4567
-    return `${cleaned.slice(0, 5)}***${cleaned.slice(-4)}`;
-  }
-
-  if (cleaned.startsWith("8") && cleaned.length === 11) {
-    // 87771234567 -> 8777***4567
-    return `${cleaned.slice(0, 4)}***${cleaned.slice(-4)}`;
-  }
-
-  if (cleaned.startsWith("7") && cleaned.length === 11) {
-    // 77771234567 -> 7777***4567
-    return `${cleaned.slice(0, 4)}***${cleaned.slice(-4)}`;
-  }
-
-  return phone;
-}
-</file>
-
-<file path="store/index.ts">
-// src/store/index.ts
-import { configureStore } from "@reduxjs/toolkit";
-// import registrationReducer from "./slices/registrationSlice";
-import authReducer from "./slices/authSlice";
-import recruitDashboardReducer from "./slices/recruitDashboardSlice";
-import coordinatorDashboardReducer from "./slices/coordinatorDashboardSlice";
-
-export const store = configureStore({
-  reducer: {
-    // registration: registrationReducer,
-    auth: authReducer,
-    recruitDashboard: recruitDashboardReducer,
-    coordinatorDashboard: coordinatorDashboardReducer,
-  },
-});
-
-// Типы для TypeScript
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
 </file>
 
 <file path="store/slices/registrationSlice.ts">
@@ -557,12 +1225,58 @@ export type AppDispatch = typeof store.dispatch;
 // export default registrationSlice.reducer
 </file>
 
-<file path="utils/api.ts">
-// src/utils/api.ts
+<file path="types/user.ts">
+export interface DoctorProfile {
+  specialty: {
+    id: number;
+    name: string;
+    code: string;
+    description: string;
+    order: number;
+  };
+  specialty_id: number;
+  license_number: string;
+  experience_years: number;
+  department: string;
+  digital_signature_active: boolean;
+}
+
+export interface CoordinatorProfile {
+  region: string;
+  district: string;
+  position: string;
+}
+
+export interface User {
+  id: number;
+  iin: string;
+  role: string;
+  first_name: string;
+  last_name: string;
+  middle_name: string;
+  full_name: string;
+  birth_date: string;
+  age: number | string;
+  nationality: string;
+  phone: string;
+  email: string;
+  education: string;
+  specialty: string;
+  sport_category: string;
+  height: number;
+  weight: number;
+  bmi: number | string;
+  chest_circumference: number;
+  spirometry: string;
+  is_verified: boolean;
+  created_at: string;
+  doctor_profile: DoctorProfile | null;
+  coordinator_profile: CoordinatorProfile | null;
+}
+</file>
+
+<file path="utils/apiInterceptors.ts">
 import axios from "axios";
-import { store } from "@/store";
-import { refreshToken as refreshTokenApi } from "@/api/auth";
-import { setTokens, logout } from "@/store/slices/authSlice";
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
@@ -578,69 +1292,320 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
+export const setupInterceptors = (
+  apiInstance: any,
+  onTokenRefresh: (access: string, refresh?: string) => void,
+  onLogout: () => void,
+  refreshTokenFn: (
+    refresh: string
+  ) => Promise<{ access: string; refresh?: string }>
+) => {
+  apiInstance.interceptors.response.use(
+    (response: any) => response,
+    async (error: any) => {
+      const originalRequest = error.config;
+
+      if (
+        error.response &&
+        error.response.status === 401 &&
+        error.response.data?.code === "token_not_valid" &&
+        !originalRequest._retry
+      ) {
+        originalRequest._retry = true;
+
+        if (isRefreshing) {
+          return new Promise(function (resolve, reject) {
+            failedQueue.push({ resolve, reject });
+          })
+            .then((token) => {
+              originalRequest.headers["Authorization"] = "Bearer " + token;
+              return apiInstance(originalRequest);
+            })
+            .catch((err) => {
+              return Promise.reject(err);
+            });
+        }
+
+        isRefreshing = true;
+        const refresh = localStorage.getItem("refresh");
+
+        if (!refresh) {
+          onLogout();
+          isRefreshing = false;
+          return Promise.reject(error);
+        }
+
+        try {
+          const data = await refreshTokenFn(refresh);
+          onTokenRefresh(data.access, data.refresh || refresh);
+
+          localStorage.setItem("access", data.access);
+          if (data.refresh) localStorage.setItem("refresh", data.refresh);
+
+          apiInstance.defaults.headers["Authorization"] =
+            "Bearer " + data.access;
+          processQueue(null, data.access);
+          originalRequest.headers["Authorization"] = "Bearer " + data.access;
+
+          return apiInstance(originalRequest);
+        } catch (err) {
+          processQueue(err, null);
+          onLogout();
+          return Promise.reject(err);
+        } finally {
+          isRefreshing = false;
+        }
+      }
+
+      return Promise.reject(error);
+    }
+  );
+};
+</file>
+
+<file path="utils/phoneUtils.ts">
+export function maskPhoneNumber(phone: string): string {
+  if (!phone) return "";
+
+  // Remove all non-digit characters except +
+  const cleaned = phone.replace(/[^\d+]/g, "");
+
+  if (cleaned.startsWith("+7") && cleaned.length === 12) {
+    // +77771234567 -> +7777***4567
+    return `${cleaned.slice(0, 5)}***${cleaned.slice(-4)}`;
+  }
+
+  if (cleaned.startsWith("8") && cleaned.length === 11) {
+    // 87771234567 -> 8777***4567
+    return `${cleaned.slice(0, 4)}***${cleaned.slice(-4)}`;
+  }
+
+  if (cleaned.startsWith("7") && cleaned.length === 11) {
+    // 77771234567 -> 7777***4567
+    return `${cleaned.slice(0, 4)}***${cleaned.slice(-4)}`;
+  }
+
+  return phone;
+}
+</file>
+
+<file path="store/index.ts">
+import { configureStore } from "@reduxjs/toolkit";
+import authReducer, { setTokens, logout } from "./slices/authSlice";
+import recruitDashboardReducer from "./slices/recruitDashboardSlice";
+import coordinatorDashboardReducer from "./slices/coordinatorDashboardSlice";
+import searchReducer from "./slices/searchSlice";
+import { api } from "../utils/api";
+import { setupInterceptors } from "../utils/apiInterceptors";
+import { refreshToken } from "../api/auth";
+
+export const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    recruitDashboard: recruitDashboardReducer,
+    coordinatorDashboard: coordinatorDashboardReducer,
+    search: searchReducer,
+  },
+});
+
+// Настройка интерцепторов после создания store
+setupInterceptors(
+  api,
+  (access: string, refresh?: string) => {
+    store.dispatch(
+      setTokens({
+        access,
+        refresh: refresh || store.getState().auth.refresh || "",
+      })
+    );
+  },
+  () => {
+    store.dispatch(logout());
+  },
+  refreshToken
+);
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+</file>
+
+<file path="store/slices/authSlice.ts">
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import {
+  login as loginApi,
+  getMe as getMeApi,
+  ecpLogin as ecpLoginApi,
+} from "@/api/auth";
+import type { User } from "@/types/user";
+
+interface AuthState {
+  access: string | null;
+  refresh: string | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  error: string | null;
+  user: User | null;
+}
+
+const initialState: AuthState = {
+  access: null,
+  refresh: null,
+  isAuthenticated: false,
+  loading: false,
+  error: null,
+  user: null,
+};
+
+// Async thunks остаются без изменений
+export const login = createAsyncThunk(
+  "auth/login",
+  async (data: { iin: string; password: string }, { rejectWithValue }) => {
+    try {
+      const res = await loginApi(data);
+      return res;
+    } catch (err: any) {
+      return rejectWithValue(err?.response?.data?.message || "Ошибка входа");
+    }
+  }
+);
+
+export const getMe = createAsyncThunk(
+  "auth/getMe",
+  async (access: string, { rejectWithValue }) => {
+    try {
+      const res = await getMeApi(access);
+      return res;
+    } catch (err: any) {
+      return rejectWithValue("Ошибка получения пользователя");
+    }
+  }
+);
+
+export const ecpLogin = createAsyncThunk(
+  "auth/ecpLogin",
+  async (
+    data: { p12_base64: string; password: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const res = await ecpLoginApi(data);
+      return res;
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message || "Ошибка входа по ЭЦП"
+      );
+    }
+  }
+);
+
+const authSlice = createSlice({
+  name: "auth",
+  initialState,
+  reducers: {
+    logout: (state) => {
+      state.access = null;
+      state.refresh = null;
+      state.isAuthenticated = false;
+      state.error = null;
+      state.user = null;
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("access");
+        localStorage.removeItem("refresh");
+      }
+    },
+    setTokens: (
+      state,
+      action: PayloadAction<{ access: string; refresh: string }>
+    ) => {
+      state.access = action.payload.access;
+      state.refresh = action.payload.refresh;
+      state.isAuthenticated = true;
+    },
+    rehydrateAuth: (state) => {
+      if (typeof window !== "undefined") {
+        const access = localStorage.getItem("access");
+        const refresh = localStorage.getItem("refresh");
+
+        if (access) {
+          state.access = access;
+          state.isAuthenticated = true;
+        }
+        if (refresh) {
+          state.refresh = refresh;
+        }
+      }
+    },
+  },
+  extraReducers: (builder) => {
+    // Остальная логика остается без изменений
+    builder
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        state.access = action.payload.access;
+        state.refresh = action.payload.refresh;
+        state.isAuthenticated = true;
+        if (typeof window !== "undefined") {
+          localStorage.setItem("access", action.payload.access);
+          localStorage.setItem("refresh", action.payload.refresh);
+        }
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(getMe.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getMe.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(getMe.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(ecpLogin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(ecpLogin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.access = action.payload.access;
+        state.refresh = action.payload.refresh;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+        if (typeof window !== "undefined") {
+          localStorage.setItem("access", action.payload.access);
+          localStorage.setItem("refresh", action.payload.refresh);
+        }
+      })
+      .addCase(ecpLogin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+  },
+});
+
+export const { logout, setTokens, rehydrateAuth } = authSlice.actions;
+export default authSlice.reducer;
+</file>
+
+<file path="utils/api.ts">
+import axios from "axios";
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
 });
-
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    if (
-      error.response &&
-      error.response.status === 401 &&
-      error.response.data?.code === "token_not_valid" &&
-      !originalRequest._retry
-    ) {
-      originalRequest._retry = true;
-      if (isRefreshing) {
-        return new Promise(function (resolve, reject) {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers["Authorization"] = "Bearer " + token;
-            return api(originalRequest);
-          })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
-      }
-      isRefreshing = true;
-      const refresh = localStorage.getItem("refresh");
-      if (!refresh) {
-        store.dispatch(logout());
-        isRefreshing = false;
-        return Promise.reject(error);
-      }
-      try {
-        const data = await refreshTokenApi(refresh);
-        store.dispatch(
-          setTokens({ access: data.access, refresh: data.refresh || refresh })
-        );
-        localStorage.setItem("access", data.access);
-        if (data.refresh) localStorage.setItem("refresh", data.refresh);
-        api.defaults.headers["Authorization"] = "Bearer " + data.access;
-        processQueue(null, data.access);
-        originalRequest.headers["Authorization"] = "Bearer " + data.access;
-        return api(originalRequest);
-      } catch (err) {
-        processQueue(err, null);
-        store.dispatch(logout());
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
-      }
-    }
-    return Promise.reject(error);
-  }
-);
-
-export { api };
 </file>
 
 </files>
