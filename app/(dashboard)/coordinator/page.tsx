@@ -28,7 +28,7 @@ const page = () => {
     }
   }, [user, data, access, dispatch]);
 
-  if (!user || user.role !== "conscript" || loading || !data)
+  if (!user || user.role !== "coordinator" || loading || !data)
     return <LoadingScreen />;
   if (error) return <div className="text-red-500">{error}</div>;
 
