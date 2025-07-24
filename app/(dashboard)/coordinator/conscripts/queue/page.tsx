@@ -107,10 +107,8 @@ const ConscriptsQueuePage = () => {
         const appResult = await dispatch(
           getApplicationByConscript({ search: iinValue, access })
         );
-        console.log("nigga 1");
 
         if (getApplicationByConscript.fulfilled.match(appResult)) {
-          console.log("nigga 2");
           // После получения application грузим LMO
           await dispatch(getLMOByConscript({ search: iinValue, access }));
 
@@ -354,7 +352,6 @@ const ConscriptsQueuePage = () => {
           variant={currentLMO ? null : "outline"}
           onClick={() => {
             if (currentLMO) {
-              // TODO: Заменить на реальный маршрут страницы ЛМО
               router.push(`/coordinator/conscripts/lmo/${currentLMO.id}`);
             }
           }}
