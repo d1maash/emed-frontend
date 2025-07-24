@@ -109,11 +109,15 @@ const ConscriptsQueuePage = () => {
         );
 
         if (getApplicationByConscript.fulfilled.match(appResult)) {
-          // После получения application грузим LMO
-          await dispatch(getLMOByConscript({ search: iinValue, access }));
-
-          setStep("application");
+          const application = appResult.payload;
+          if (application) {
+            await dispatch(getLMOByConscript({ search: iinValue, access }));
+            setStep("application");
+          } else {
+            setStep("found");
+          }
         } else {
+          // Handle rejected or pending (unlikely here since awaited)
           setStep("found");
         }
 
