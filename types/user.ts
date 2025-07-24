@@ -1,11 +1,13 @@
+export interface MedicalSpeciality {
+  id: number;
+  name: string;
+  code: string;
+  description: string;
+  order: number;
+}
+
 export interface DoctorProfile {
-  specialty: {
-    id: number;
-    name: string;
-    code: string;
-    description: string;
-    order: number;
-  };
+  specialty: MedicalSpeciality;
   specialty_id: number;
   license_number: string;
   experience_years: number;
@@ -44,4 +46,10 @@ export interface User {
   created_at: string;
   doctor_profile: DoctorProfile | null;
   coordinator_profile: CoordinatorProfile | null;
+}
+
+export interface DoctorList {
+  id: number;
+  full_name: string;
+  doctor_profile: DoctorProfile;
 }

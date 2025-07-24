@@ -10,7 +10,6 @@ import {
   SortingState,
 } from "@tanstack/react-table";
 import { columns } from "./columns";
-import { Conscript } from "./types";
 import {
   Table,
   TableBody,
@@ -21,9 +20,12 @@ import {
 } from "@/components/ui/table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { User } from "@/types/user";
 
 interface CoordinatorConscriptsTableProps {
-  data: Conscript[];
+  data: User[];
+  isLoading: boolean;
+  error: string | null;
 }
 
 export const CoordinatorConscriptsTable: React.FC<
