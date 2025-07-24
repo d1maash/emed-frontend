@@ -9,7 +9,7 @@ import {
 import { User } from "@/types/user";
 
 interface SearchState {
-  searchResults: User | null;
+  searchResults: User[] | null;
   loading: boolean;
   error: string | null;
   lastSearchParams: SearchUserParams | null;
@@ -30,7 +30,7 @@ export const searchUser = createAsyncThunk(
   ) => {
     try {
       const res = await searchUserApi(params, access);
-      return { results: res, params };
+      return { results: [res], params };
     } catch (err: any) {
       return rejectWithValue(
         err?.response?.data?.message ||
@@ -49,7 +49,7 @@ export const searchConscript = createAsyncThunk(
   ) => {
     try {
       const res = await searchConscriptApi(iin, access);
-      return { results: res, params: { iin, role: "conscript" as const } };
+      return { results: [res], params: { iin, role: "conscript" as const } };
     } catch (err: any) {
       return rejectWithValue(err.message || "Призывник не найден");
     }
@@ -64,7 +64,7 @@ export const searchCoordinator = createAsyncThunk(
   ) => {
     try {
       const res = await searchCoordinatorApi(iin, access);
-      return { results: res, params: { iin, role: "coordinator" as const } };
+      return { results: [res], params: { iin, role: "coordinator" as const } };
     } catch (err: any) {
       return rejectWithValue(err.message || "Координатор не найден");
     }

@@ -1,3 +1,6 @@
+import { Application, LMO } from "@/types/application";
+import { User } from "@/types/user";
+
 export type ConscriptStatus =
   | "Ожидает приема"
   | "На приеме"
@@ -6,10 +9,7 @@ export type ConscriptStatus =
   | "Результат готов";
 
 export interface Conscript {
-  id: number;
-  name: string;
-  login: string;
-  militaryId: string;
-  department: string;
-  status: ConscriptStatus;
+  user: User;
+  application: Application;
+  lmo: LMO;
 }

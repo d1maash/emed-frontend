@@ -25,6 +25,7 @@ import {
   clearApplication,
 } from "@/store/slices/applicationSlice";
 import { z } from "zod";
+import { Button } from "@/components/ui/Button";
 
 const searchSchema = z.object({
   iin: z
@@ -111,11 +112,11 @@ const ConscriptsQueuePage = () => {
   };
 
   const handleCreateApplication = async () => {
-    if (!searchResults?.iin || !access) return;
+    if (!searchResults?.[0].iin || !access) return;
 
     const result = await dispatch(
       createApplicationByCoordinator({
-        iin: searchResults.iin,
+        iin: searchResults[0].iin,
         access,
       })
     );
@@ -201,16 +202,16 @@ const ConscriptsQueuePage = () => {
       <CardContent className="w-full space-y-4">
         <div className="space-y-2">
           <p>
-            <strong>ФИО:</strong> {searchResults?.full_name}
+            <strong>ФИО:</strong> {searchResults?.[0].full_name}
           </p>
           <p>
-            <strong>ИИН:</strong> {searchResults?.iin}
+            <strong>ИИН:</strong> {searchResults?.[0].iin}
           </p>
           <p>
-            <strong>Дата рождения:</strong> {searchResults?.birth_date}
+            <strong>Дата рождения:</strong> {searchResults?.[0].birth_date}
           </p>
           <p>
-            <strong>Телефон:</strong> {searchResults?.phone}
+            <strong>Телефон:</strong> {searchResults?.[0].phone}
           </p>
         </div>
         {appError && <p className="text-red-500 text-sm">{appError}</p>}
@@ -241,8 +242,9 @@ const ConscriptsQueuePage = () => {
       <CardContent className="w-full space-y-4">
         <div className="space-y-2">
           <p>
-            <strong>Призывник:</strong> {searchResults?.full_name}
+            <strong>Призывник:</strong> {searchResults?.[0].full_name}
           </p>
+          fsaxdfzax' ' ''
           <p>
             <strong>ID заявки:</strong> {currentApplication?.id}
           </p>
@@ -292,7 +294,7 @@ const ConscriptsQueuePage = () => {
       <CardContent className="w-full space-y-4">
         <div className="space-y-2">
           <p>
-            <strong>Призывник:</strong> {searchResults?.full_name}
+            <strong>Призывник:</strong> {searchResults?.[0].full_name}
           </p>
           <p>
             <strong>ID заявки:</strong> {currentApplication?.id}
@@ -311,11 +313,22 @@ const ConscriptsQueuePage = () => {
   );
 
   return (
-    <div className="w-full flex justify-center">
-      {step === "search" && renderSearchForm()}
-      {step === "found" && renderFoundUser()}
-      {step === "application" && renderApplicationCreated()}
-      {step === "medical" && renderMedicalSent()}
+    <div className="w-full mx-auto flex justify-center">
+      <div className="max-w-sm grid grid-cols-1 gap-4">
+        {step === "search" && renderSearchForm()}
+        {step === "found" && renderFoundUser()}
+        {step === "application" && renderApplicationCreated()}
+        {step === "medical" && renderMedicalSent()}
+        <MyButton
+          onClick={() => {
+            router.push("/coordinator/conscripts");
+          }}
+          variant={"outline"}
+          className="py-2 w-full max-h-max"
+        >
+          Таблица призывников
+        </MyButton>
+      </div>
     </div>
   );
 };

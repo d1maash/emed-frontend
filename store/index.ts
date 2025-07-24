@@ -4,6 +4,7 @@ import recruitDashboardReducer from "./slices/recruitDashboardSlice";
 import coordinatorDashboardReducer from "./slices/coordinatorDashboardSlice";
 import searchReducer from "./slices/searchSlice";
 import applicationReducer from "./slices/applicationSlice";
+import conscriptsReducer from "./slices/conscriptsSlice";
 import { api } from "../utils/api";
 import { setupInterceptors } from "../utils/apiInterceptors";
 import { refreshToken } from "../api/auth";
@@ -14,6 +15,7 @@ export const store = configureStore({
     recruitDashboard: recruitDashboardReducer,
     coordinatorDashboard: coordinatorDashboardReducer,
     application: applicationReducer,
+    conscripts: conscriptsReducer,
     search: searchReducer,
   },
 });
