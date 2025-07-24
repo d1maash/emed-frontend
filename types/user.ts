@@ -47,3 +47,9 @@ export interface User {
   doctor_profile: DoctorProfile | null;
   coordinator_profile: CoordinatorProfile | null;
 }
+
+export interface DoctorList {
+  id: number;
+  full_name: string;
+  doctor_profile: DoctorProfile;
+}

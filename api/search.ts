@@ -1,10 +1,24 @@
-import { User } from "@/types/user";
+import { DoctorList, User } from "@/types/user";
 import { api } from "@/utils/api";
 
 export interface SearchUserParams {
   iin: string;
   role?: "conscript" | "coordinator" | "doctor" | "commission";
 }
+
+export type DoctorSpeciality =
+  | "ФТИЗИАТР"
+  | "РЕНТГЕНОЛОГ"
+  | "ДЕРМАТОВЕНЕРОЛОГ"
+  | "ХИРУРГ"
+  | "НЕВРАПАТОЛОГ"
+  | "ПСИХИАТР"
+  | "НАРКОЛОГ"
+  | "СТОМАТОЛОГ"
+  | "ОФТАЛЬМОЛОГ"
+  | "СТОМАТОЛОГ"
+  | "ОТОРИНОЛАРИНГОЛОГ"
+  | "ТЕРАПЕВТ";
 
 export const searchUser = async (
   iin: SearchUserParams,
@@ -79,25 +93,18 @@ export const searchCoordinator = async (
   }
 };
 
-export const searchDoctor = async (
-  iin: string,
+export const searchDoctors = async (
+  speciality: DoctorSpeciality,
   access: string
-): Promise<User> => {
+): Promise<DoctorList[]> => {
   try {
-    const response = await api.post(
-      `/api/users/search/`,
-      { iin },
-      {
-        headers: {
-          Authorization: `Bearer ${access}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (response.data.role !== "doctor") {
-      throw new Error("Пользователь не является доктором");
-    }
+    const response = await api.get(`/api/users/doctors/`, {
+      params: { speciality },
+      headers: {
+        Authorization: `Bearer ${access}`,
+        "Content-Type": "application/json",
+      },
+    });
     return response.data;
   } catch (error: any) {
     if (error.response?.status === 404) {

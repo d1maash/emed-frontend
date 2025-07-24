@@ -1,10 +1,4 @@
 {
-  "include": [
-    "store/**",
-    "api/**",
-    "utils/**",
-    "types/**",
-    "app/(dashboard)/coordinator/conscripts/**"
-  ],
+  "include": ["store/**", "api/**", "utils/**", "types/**"],
   "ignore": {}
 }

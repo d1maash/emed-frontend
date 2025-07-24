@@ -23,9 +23,10 @@ import {
   createApplicationByCoordinator,
   sendToMedical,
   clearApplication,
+  getApplicationByConscript,
+  getLMOByConscript,
 } from "@/store/slices/applicationSlice";
 import { z } from "zod";
-import { Button } from "@/components/ui/Button";
 
 const searchSchema = z.object({
   iin: z
@@ -41,6 +42,7 @@ const ConscriptsQueuePage = () => {
   const [step, setStep] = useState<
     "search" | "found" | "application" | "medical"
   >("search");
+  const [isInitialLoading, setIsInitialLoading] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -61,14 +63,14 @@ const ConscriptsQueuePage = () => {
     sentToMedical,
   } = useAppSelector((state) => state.application);
 
-  // Initialize search from URL params
+  // Initialize search from URL params and check for existing application
   useEffect(() => {
     const iinParam = searchParams.get("iin");
-    if (iinParam) {
+    if (iinParam && access) {
       setSearch(iinParam);
-      handleSearch(iinParam);
+      handleInitialSearch(iinParam);
     }
-  }, [searchParams]);
+  }, [searchParams, access]);
 
   // Clear state on component mount
   useEffect(() => {
@@ -86,6 +88,49 @@ const ConscriptsQueuePage = () => {
     router.replace(`?${params.toString()}`);
   };
 
+  // Функция для первоначального поиска с проверкой application
+  const handleInitialSearch = async (iinValue: string) => {
+    if (!access) return;
+
+    setIsInitialLoading(true);
+
+    try {
+      searchSchema.parse({ iin: iinValue });
+      setValidationError("");
+
+      dispatch(clearError());
+      const searchResult = await dispatch(
+        searchConscript({ iin: iinValue, access })
+      );
+
+      if (searchConscript.fulfilled.match(searchResult)) {
+        const appResult = await dispatch(
+          getApplicationByConscript({ search: iinValue, access })
+        );
+        console.log("nigga 1");
+
+        if (getApplicationByConscript.fulfilled.match(appResult)) {
+          console.log("nigga 2");
+          // После получения application грузим LMO
+          await dispatch(getLMOByConscript({ search: iinValue, access }));
+
+          setStep("application");
+        } else {
+          setStep("found");
+        }
+
+        updateSearchParams(iinValue);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setValidationError(error.errors[0].message);
+      }
+    } finally {
+      setIsInitialLoading(false);
+    }
+  };
+
+  // Обычный поиск (для ручного ввода)
   const handleSearch = async (iinValue?: string) => {
     const iinToSearch = iinValue || search;
 
@@ -100,7 +145,7 @@ const ConscriptsQueuePage = () => {
           searchConscript({ iin: iinToSearch, access })
         );
 
-        if (searchConscript.fulfilled.match(result)) {
+        if (searchConscript.fulfilled.match(result) && currentApplication) {
           setStep("found");
         }
       }
@@ -149,6 +194,24 @@ const ConscriptsQueuePage = () => {
     dispatch(clearSearchResults());
     dispatch(clearApplication());
   };
+
+  // Показываем загрузку при первоначальной проверке
+  if (isInitialLoading) {
+    return (
+      <div className="w-full mx-auto flex justify-center">
+        <Card className="w-max flex items-center flex-col p-2">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <p className="text-sm text-gray-600">
+                Проверка данных призывника...
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const renderSearchForm = () => (
     <Card className="w-max flex items-center flex-col p-2">
@@ -236,20 +299,21 @@ const ConscriptsQueuePage = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileText className="w-5 h-5" />
-          Заявка создана
+          Заявка найдена
         </CardTitle>
       </CardHeader>
       <CardContent className="w-full space-y-4">
         <div className="space-y-2">
           <p>
-            <strong>Призывник:</strong> {searchResults?.[0].full_name}
+            <strong>Призывник:</strong>{" "}
+            {searchResults?.[0]?.full_name ||
+              currentApplication?.applicant?.full_name}
           </p>
-          fsaxdfzax' ' ''
           <p>
             <strong>ID заявки:</strong> {currentApplication?.id}
           </p>
           <p>
-            <strong>Статус:</strong> {currentApplication?.status}
+            <strong>Статус:</strong> {currentApplication?.status_display}
           </p>
           {currentLMO && (
             <div className="mt-4 p-3 bg-gray-50 rounded">
@@ -258,10 +322,13 @@ const ConscriptsQueuePage = () => {
                 <strong>ID:</strong> {currentLMO.id}
               </p>
               <p>
-                <strong>Координатор:</strong> {currentLMO.coordinator.full_name}
+                <strong>Номер:</strong> {currentLMO.number}
               </p>
               <p>
-                <strong>Телефон:</strong> {currentLMO.conscript.phone}
+                <strong>Статус:</strong> {currentLMO.status_display}
+              </p>
+              <p>
+                <strong>Текущий этап:</strong> {currentLMO.current_stage}
               </p>
             </div>
           )}
@@ -272,21 +339,41 @@ const ConscriptsQueuePage = () => {
         <MyButton onClick={handleReset} variant="outline" className="flex-1">
           Новый поиск
         </MyButton>
+        {currentApplication?.status === "draft" && (
+          <MyButton
+            onClick={handleSendToMedical}
+            className="flex-1"
+            disabled={sendingToMedical}
+          >
+            {sendingToMedical ? "Отправка..." : "Отправить на медосмотр"}
+          </MyButton>
+        )}
         <MyButton
-          onClick={handleSendToMedical}
           className="flex-1"
-          disabled={sendingToMedical}
+          disabled={!currentLMO}
+          variant={currentLMO ? null : "outline"}
+          onClick={() => {
+            if (currentLMO) {
+              // TODO: Заменить на реальный маршрут страницы ЛМО
+              router.push(`/coordinator/conscripts/lmo/${currentLMO.id}`);
+            }
+          }}
         >
-          {sendingToMedical ? "Отправка..." : "Отправить на медосмотр"}
+          ЛМО (Лист медицинского освидетельствования)
         </MyButton>
       </CardFooter>
+      {!currentLMO && (
+        <p className="text-red-500 text-sm mt-2">
+          ЛМО для данного призывника не найдено.
+        </p>
+      )}
     </Card>
   );
 
   const renderMedicalSent = () => (
     <Card className="w-max flex items-center flex-col p-2">
       <CardHeader>
-        <CardTitle className="flex items-centers gap-2 text-green-600">
+        <CardTitle className="flex items-center gap-2 text-green-600">
           <Stethoscope className="w-5 h-5" />
           Отправлено на медосмотр
         </CardTitle>
@@ -294,7 +381,9 @@ const ConscriptsQueuePage = () => {
       <CardContent className="w-full space-y-4">
         <div className="space-y-2">
           <p>
-            <strong>Призывник:</strong> {searchResults?.[0].full_name}
+            <strong>Призывник:</strong>{" "}
+            {searchResults?.[0]?.full_name ||
+              currentApplication?.applicant?.full_name}
           </p>
           <p>
             <strong>ID заявки:</strong> {currentApplication?.id}
@@ -314,7 +403,7 @@ const ConscriptsQueuePage = () => {
 
   return (
     <div className="w-full mx-auto flex justify-center">
-      <div className="max-w-sm grid grid-cols-1 gap-4">
+      <div className=" grid grid-cols-1 gap-4">
         {step === "search" && renderSearchForm()}
         {step === "found" && renderFoundUser()}
         {step === "application" && renderApplicationCreated()}

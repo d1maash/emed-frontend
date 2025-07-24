@@ -58,7 +58,7 @@ const CoordinatorConscriptsPage = () => {
   const [voenkomat, setVoenkomat] = useState<string | undefined>(undefined);
   const [validationError, setValidationError] = useState("");
 
-  const debouncedSearch = useDebounce(search, 500);
+  const debouncedSearch = useDebounce(search, 1000);
 
   // initURLParams - только восстанавливаем состояние из URL
   useEffect(() => {

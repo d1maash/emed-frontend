@@ -81,7 +81,7 @@ export interface LMO {
   created_at: string;
   updated_at: string;
   completed_at: string | null;
-  doctor_queue: DoctorQueueElement;
+  doctor_queue: DoctorQueueElement[];
   medical_records: MedicalRecord[];
   completed_specialties: MedicalSpeciality[];
   pending_specialties: MedicalSpeciality[];
@@ -93,3 +93,7 @@ export interface CreateApplicationResponse {
   application: Application;
   lmo: LMO;
 }
+
+// export interface GetApplicationsResponse {
+//   applications: Application[]
+// }
