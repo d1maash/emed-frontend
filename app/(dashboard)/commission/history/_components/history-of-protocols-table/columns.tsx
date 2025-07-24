@@ -157,23 +157,19 @@ export const columns: ColumnDef<Protocol>[] = [
   },
   {
     id: "options",
-    cell: ({ row }) => {
-      const id = row.original.id;
-      const router = useRouter();
-      const handleOnclick = () => {
-        router.push(`/commission/case?id=${id}`);
-      };
-      return (
-        <button
-          onClick={() => {
-            handleOnclick();
-          }}
-          className="rounded-xl py-0.5 px-2.5 font-medium text-xs border border-[--primary-60] hover:bg-[--primary-90] hover:text-white hover:border-[--primary-90] transition"
-        >
-          Просмотреть протокол
-        </button>
-      );
-    },
+    cell: ({ row }) => <OptionsCell id={row.original.id} />,
     size: 160,
   },
 ];
+
+const OptionsCell = ({ id }: { id: string }) => {
+  const router = useRouter();
+  return (
+    <button
+      onClick={() => router.push(`/commission/case?id=${id}`)}
+      className="rounded-xl py-0.5 px-2.5 font-medium text-xs border border-[--primary-60] hover:bg-[--primary-90] hover:text-white hover:border-[--primary-90] transition"
+    >
+      Просмотреть протокол
+    </button>
+  );
+};

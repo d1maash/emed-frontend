@@ -11,7 +11,7 @@ import { ru } from "date-fns/locale";
 import { Separator } from "@/components/ui/separator";
 import DateBlocks, { MeetingBlock } from "./_components/DateBlocks";
 
-const page = () => {
+const Page = () => {
   const [globalFilter, setGlobalFilter] = useState("");
 
   const filteredRecruits = recruits.filter((r) => {
@@ -126,7 +126,7 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
 
 const meetings: MeetingBlock[] = [
   {

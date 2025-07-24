@@ -131,7 +131,7 @@ const CoordinatorConscriptsPage = () => {
       dispatch(clearConscripts());
       updateSearchParams({ search: "" });
     }
-  }, [debouncedSearch, performSearch]);
+  }, [debouncedSearch, performSearch, dispatch, updateSearchParams]);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -255,7 +255,7 @@ const CoordinatorConscriptsPage = () => {
           <span className="font-medium">{filteredConscripts.length}</span>
           {search && (
             <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-              "{search}"
+              &quot;{search}&quot;
             </span>
           )}
         </div>

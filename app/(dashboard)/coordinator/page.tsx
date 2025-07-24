@@ -12,7 +12,7 @@ import { useEffect } from "react";
 import { getCoordinatorDashboard } from "@/store/slices/coordinatorDashboardSlice";
 import LoadingScreen from "@/components/LoadingScreen";
 
-const page = () => {
+const Page = () => {
   const dispatch = useAppDispatch();
   const {
     data = null,
@@ -238,4 +238,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

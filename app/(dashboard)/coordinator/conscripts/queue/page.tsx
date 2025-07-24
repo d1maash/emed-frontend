@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/Input";
 import { Search, FileText, Stethoscope } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   clearError,
@@ -63,21 +63,6 @@ const ConscriptsQueuePage = () => {
     sentToMedical,
   } = useAppSelector((state) => state.application);
 
-  // Initialize search from URL params and check for existing application
-  useEffect(() => {
-    const iinParam = searchParams.get("iin");
-    if (iinParam && access) {
-      setSearch(iinParam);
-      handleInitialSearch(iinParam);
-    }
-  }, [searchParams, access]);
-
-  // Clear state on component mount
-  useEffect(() => {
-    dispatch(clearSearchResults());
-    dispatch(clearApplication());
-  }, [dispatch]);
-
   const updateSearchParams = (iin: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (iin) {
@@ -89,48 +74,64 @@ const ConscriptsQueuePage = () => {
   };
 
   // Функция для первоначального поиска с проверкой application
-  const handleInitialSearch = async (iinValue: string) => {
-    if (!access) return;
+  const handleInitialSearch = useCallback(
+    async (iinValue: string) => {
+      if (!access) return;
 
-    setIsInitialLoading(true);
+      setIsInitialLoading(true);
 
-    try {
-      searchSchema.parse({ iin: iinValue });
-      setValidationError("");
+      try {
+        searchSchema.parse({ iin: iinValue });
+        setValidationError("");
 
-      dispatch(clearError());
-      const searchResult = await dispatch(
-        searchConscript({ iin: iinValue, access })
-      );
-
-      if (searchConscript.fulfilled.match(searchResult)) {
-        const appResult = await dispatch(
-          getApplicationByConscript({ search: iinValue, access })
+        dispatch(clearError());
+        const searchResult = await dispatch(
+          searchConscript({ iin: iinValue, access })
         );
 
-        if (getApplicationByConscript.fulfilled.match(appResult)) {
-          const application = appResult.payload;
-          if (application) {
-            await dispatch(getLMOByConscript({ search: iinValue, access }));
-            setStep("application");
+        if (searchConscript.fulfilled.match(searchResult)) {
+          const appResult = await dispatch(
+            getApplicationByConscript({ search: iinValue, access })
+          );
+
+          if (getApplicationByConscript.fulfilled.match(appResult)) {
+            const application = appResult.payload;
+            if (application) {
+              await dispatch(getLMOByConscript({ search: iinValue, access }));
+              setStep("application");
+            } else {
+              setStep("found");
+            }
           } else {
+            // Handle rejected or pending (unlikely here since awaited)
             setStep("found");
           }
-        } else {
-          // Handle rejected or pending (unlikely here since awaited)
-          setStep("found");
-        }
 
-        updateSearchParams(iinValue);
+          updateSearchParams(iinValue);
+        }
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          setValidationError(error.errors[0].message);
+        }
+      } finally {
+        setIsInitialLoading(false);
       }
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        setValidationError(error.errors[0].message);
-      }
-    } finally {
-      setIsInitialLoading(false);
+    },
+    [access, dispatch, updateSearchParams]
+  );
+
+  useEffect(() => {
+    const iinParam = searchParams.get("iin");
+    if (iinParam && access) {
+      setSearch(iinParam);
+      handleInitialSearch(iinParam);
     }
-  };
+  }, [searchParams, access, handleInitialSearch]);
+
+  useEffect(() => {
+    dispatch(clearSearchResults());
+    dispatch(clearApplication());
+  }, [dispatch]);
 
   // Обычный поиск (для ручного ввода)
   const handleSearch = async (iinValue?: string) => {

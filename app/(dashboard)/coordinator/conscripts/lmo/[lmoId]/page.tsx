@@ -26,7 +26,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
-const page = () => {
+const Page = () => {
   const { lmoId } = useParams<{ lmoId: string }>();
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -134,4 +134,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

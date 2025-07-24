@@ -6,6 +6,30 @@ import { cn } from "@/lib/utils";
 import { User } from "@/types/user";
 import { useRouter } from "next/navigation";
 
+const ActionsCell = ({ iin }: { iin: string }) => {
+  const router = useRouter();
+  return (
+    <div className="flex items-center gap-2">
+      <Button variant="ghost" size="icon" className="text-blue-500">
+        <Pencil size={18} />
+      </Button>
+      <Button
+        onClick={() => {
+          router.push("/coordinator/conscripts/queue/?iin=" + iin);
+        }}
+        variant="ghost"
+        size="icon"
+        className="text-gray-500"
+      >
+        <Eye size={18} />
+      </Button>
+      <Button variant="ghost" size="icon" className="text-red-500">
+        <X size={18} />
+      </Button>
+    </div>
+  );
+};
+
 export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "id",
@@ -71,32 +95,7 @@ export const columns: ColumnDef<User>[] = [
   {
     id: "actions",
     header: "",
-    cell: ({ row }) => {
-      const router = useRouter();
-
-      return (
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="text-blue-500">
-            <Pencil size={18} />
-          </Button>
-          <Button
-            onClick={() => {
-              router.push(
-                "/coordinator/conscripts/queue/?iin=" + row.original.iin
-              );
-            }}
-            variant="ghost"
-            size="icon"
-            className="text-gray-500"
-          >
-            <Eye size={18} />
-          </Button>
-          <Button variant="ghost" size="icon" className="text-red-500">
-            <X size={18} />
-          </Button>
-        </div>
-      );
-    },
+    cell: ({ row }) => <ActionsCell iin={row.original.iin} />, // refactored
     size: 80,
     enableSorting: false,
   },
