@@ -20,10 +20,10 @@ import {
 } from "@/components/ui/table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { User } from "@/types/user";
+import { Conscript } from "@/types/conscript";
 
 interface CoordinatorConscriptsTableProps {
-  data: User[];
+  data: Conscript[];
   isLoading: boolean;
   error: string | null;
 }

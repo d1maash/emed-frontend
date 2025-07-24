@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Pencil, Eye, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
-import { User } from "@/types/user";
+import { Conscript } from "@/types/conscript";
 import { useRouter } from "next/navigation";
 
 const ActionsCell = ({ iin }: { iin: string }) => {
@@ -30,18 +30,18 @@ const ActionsCell = ({ iin }: { iin: string }) => {
   );
 };
 
-export const columns: ColumnDef<User>[] = [
+export const columns: ColumnDef<Conscript>[] = [
   {
     accessorKey: "id",
     header: "#",
-    cell: ({ row }) => row.original.id,
+    cell: ({ row }) => row.original.user.id,
     size: 36,
     enableSorting: false,
   },
   {
     accessorKey: "name",
     header: "ФИО",
-    cell: ({ row }) => row.original.full_name,
+    cell: ({ row }) => row.original.user.full_name,
     size: 220,
     enableSorting: true,
     sortingFn: "alphanumeric",
@@ -49,7 +49,7 @@ export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "iin",
     header: "ИИН",
-    cell: ({ row }) => row.original.iin,
+    cell: ({ row }) => row.original.user.iin,
     size: 180,
     enableSorting: false,
   },
@@ -71,20 +71,6 @@ export const columns: ColumnDef<User>[] = [
     accessorKey: "status",
     header: "Статус",
     cell: ({ row }) => (
-      // <Badge
-      //   className={cn(
-      //     "rounded-full",
-      //     row.original.status === "Ожидает приема"
-      //       ? "text-yellow-600 bg-yellow-50 hover:text-white hover:bg-yellow-600"
-      //       : row.original.status === "Завершено"
-      //       ? "text-green-600 bg-green-50 hover:text-white hover:bg-green-600"
-      //       : row.original.status === "Результат готов"
-      //       ? "text-blue-600 bg-blue-50 hover:text-white hover:bg-blue-600"
-      //       : "text-gray-600 bg-gray-50 hover:text-white hover:bg-gray-600"
-      //   )}
-      // >
-      //   {row.original.status}
-      // </Badge>
       <Badge className="rounded-full text-blue-600 bg-blue-50 hover:text-white hover:bg-blue-600">
         Недоступно
       </Badge>
@@ -95,7 +81,7 @@ export const columns: ColumnDef<User>[] = [
   {
     id: "actions",
     header: "",
-    cell: ({ row }) => <ActionsCell iin={row.original.iin} />, // refactored
+    cell: ({ row }) => <ActionsCell iin={row.original.user.iin} />, // refactored
     size: 80,
     enableSorting: false,
   },

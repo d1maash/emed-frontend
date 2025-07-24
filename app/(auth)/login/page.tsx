@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import MyButton from "@/components/myui/MyButton";
 import MyInput from "@/components/myui/MyInput";
 import Logo from "@/components/Logo";

@@ -20,6 +20,7 @@ import {
 } from "@/store/slices/conscriptsSlice";
 import z from "zod";
 import { useDebounce } from "@/app/hooks/useDebounce";
+import { Conscript } from "@/types/conscript";
 
 const STATUSES = [
   { value: "Ожидает приема", label: "Ожидает приема" },
@@ -161,15 +162,12 @@ const CoordinatorConscriptsPage = () => {
   };
 
   const hasActiveFilters = search || status || voenkomat;
-  const conscriptsData = Array.isArray(data) ? data : [];
+  const conscriptsData: Conscript[] = Array.isArray(data)
+    ? (data as User[]).map((user) => ({ user, application: null, lmo: null }))
+    : [];
 
-  const filteredConscripts = conscriptsData.filter((c: User) => {
-    const matchesStatus = status ? true : true; // Временно пропускаем фильтрацию по статусу
-    const matchesVoenkomat = voenkomat
-      ? c.coordinator_profile?.district === voenkomat
-      : true;
-
-    return matchesStatus && matchesVoenkomat;
+  const filteredConscripts = conscriptsData.filter((c: Conscript) => {
+    return true;
   });
 
   return (
