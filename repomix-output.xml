@@ -32,7 +32,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: store/**, api/**, utils/**, types/**
+- Only files matching these patterns are included: store/**, api/**, utils/**, types/**, coordinator/conscripts/**
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -68,48 +68,6 @@ utils/phoneUtils.ts
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="api/lmo.ts">
-import { LMO } from "@/types/application";
-import { api } from "@/utils/api";
-
-export const getLMOByConscript = async (
-  search: string,
-  access: string
-): Promise<LMO[]> => {
-  const response = await api.get("/api/medical/lmos/", {
-    params: { search: search },
-    headers: {
-      Authorization: `Bearer ${access}`,
-      "Content-Type": "application/json",
-    },
-  });
-  return response.data;
-};
-
-export const assignDoctor = async (
-  lmoId: number,
-  doctorId: number,
-  queueId: number,
-  access: string
-): Promise<{ doctorId: number; queueId: number }> => {
-  const response = await api.post(
-    `api/medical/lmos/${lmoId}/assign-doctor`,
-    {
-      doctor_id: doctorId,
-      queue_id: queueId,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${access}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  return response.data;
-};
-</file>
 
 <file path="types/registration.ts">
 // src/types/registration.ts
@@ -165,114 +123,9 @@ export function maskPhoneNumber(phone: string): string {
 }
 </file>
 
-<file path="api/application.ts">
-import { api } from "@/utils/api";
-import { User } from "@/types/user";
-import { Application, CreateApplicationResponse } from "@/types/application";
-
-export const createApplicationByCoordinator = async (
-  iin: string,
-  access: string
-): Promise<CreateApplicationResponse> => {
-  const response = await api.post(
-    `/api/applications/create_by_coordinator/`,
-    { iin },
-    {
-      headers: {
-        Authorization: `Bearer ${access}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
-  return response.data;
-};
-
-export const sendToMedical = async (
-  applicationId: number,
-  access: string
-): Promise<{ message: string }> => {
-  const response = await api.post(
-    `/api/applications/${applicationId}/send_to_medical/`,
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${access}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
-  return response.data;
-};
-
-export const getApplicationByConscript = async (
-  search: string,
-  access: string
-): Promise<Application[]> => {
-  const response = await api.get("/api/applications/", {
-    params: { search: search },
-    headers: {
-      Authorization: `Bearer ${access}`,
-      "Content-Type": "application/json",
-    },
-  });
-  return response.data;
-};
-</file>
-
-<file path="api/auth.ts">
-import { api } from "@/utils/api";
-
-export const login = async (data: { iin: string; password: string }) => {
-  const response = await api.post(`/api/users/auth/login/`, data, {
-    headers: { "Content-Type": "application/json" },
-  });
-  return response.data;
-};
-
-export const getMe = async (access: string) => {
-  const response = await api.get(`/api/users/me/`, {
-    headers: {
-      Authorization: `Bearer ${access}`,
-    },
-  });
-  return response.data;
-};
-
-export const ecpLogin = async (data: {
-  p12_base64: string;
-  password: string;
-}) => {
-  const response = await api.post(`/api/users/auth/ecp-login/`, data, {
-    headers: { "Content-Type": "application/json" },
-  });
-  return response.data;
-};
-
-export const refreshToken = async (refresh: string) => {
-  const response = await api.post(
-    `/api/users/auth/refresh/`,
-    { refresh },
-    {
-      headers: { "Content-Type": "application/json" },
-    }
-  );
-  return response.data;
-};
-
-export const logout = async (access: string) => {
-  return api.post(
-    `/api/users/auth/logout/`,
-    {},
-    {
-      headers: { Authorization: `Bearer ${access}` },
-    }
-  );
-};
-</file>
-
 <file path="api/conscripts.ts">
 import { api } from "@/utils/api";
-import { Conscript } from "@/types/conscript";
+// import { Conscript } from "@/types/conscript";
 import { User } from "@/types/user";
 
 export const listConscripts = async (
@@ -311,6 +164,61 @@ export const getCoordinatorDashboard = async (access: string) => {
 };
 </file>
 
+<file path="api/lmo.ts">
+import { LMO } from "@/types/application";
+import { api } from "@/utils/api";
+
+export const getLMOByConscript = async (
+  search: string,
+  access: string
+): Promise<LMO[]> => {
+  const response = await api.get("/api/medical/lmos/", {
+    params: { search: search },
+    headers: {
+      Authorization: `Bearer ${access}`,
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
+};
+
+export const getLMOById = async (
+  lmoId: number,
+  access: string
+): Promise<LMO> => {
+  const response = await api.get(`/api/medical/lmos/${lmoId}`, {
+    headers: {
+      Authorization: `Bearer ${access}`,
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
+};
+
+export const assignDoctor = async (
+  lmoId: number,
+  doctorId: number,
+  queueId: number,
+  access: string
+): Promise<{ doctorId: number; queueId: number }> => {
+  const response = await api.post(
+    `api/medical/lmos/${lmoId}/assign-doctor`,
+    {
+      doctor_id: doctorId,
+      queue_id: queueId,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${access}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  return response.data;
+};
+</file>
+
 <file path="api/recruit.ts">
 import { api } from "@/utils/api";
 
@@ -324,310 +232,12 @@ export const getRecruitDashboard = async (access: string) => {
 };
 </file>
 
-<file path="api/search.ts">
-import { User } from "@/types/user";
-import { api } from "@/utils/api";
-
-export interface SearchUserParams {
-  iin: string;
-  role?: "conscript" | "coordinator" | "doctor" | "commission";
-}
-
-export const searchUser = async (
-  iin: SearchUserParams,
-  access: string
-): Promise<User> => {
-  const response = await api.post(
-    `/api/users/search/`,
-    { iin },
-    {
-      headers: {
-        Authorization: `Bearer ${access}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
-  return response.data;
-};
-
-export const searchConscript = async (
-  iin: string,
-  access: string
-): Promise<User> => {
-  try {
-    const response = await api.post(
-      `/api/users/search/`,
-      { iin },
-      {
-        headers: {
-          Authorization: `Bearer ${access}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (response.data.role !== "conscript") {
-      throw new Error("Пользователь не является призывником");
-    }
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.status === 404) {
-      throw new Error("Призывник не найден");
-    }
-    throw new Error(error.response?.data?.message || "Призывник не найден");
-  }
-};
-
-export const searchCoordinator = async (
-  iin: string,
-  access: string
-): Promise<User> => {
-  try {
-    const response = await api.post(
-      `/api/users/search/`,
-      { iin },
-      {
-        headers: {
-          Authorization: `Bearer ${access}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (response.data.role !== "coordinator") {
-      throw new Error("Пользователь не является координатором");
-    }
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.status === 404) {
-      throw new Error("Координатор не найден");
-    }
-    throw new Error(error.response?.data?.message || "Координатор не найден");
-  }
-};
-
-export const searchDoctor = async (
-  iin: string,
-  access: string
-): Promise<User> => {
-  try {
-    const response = await api.post(
-      `/api/users/search/`,
-      { iin },
-      {
-        headers: {
-          Authorization: `Bearer ${access}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (response.data.role !== "doctor") {
-      throw new Error("Пользователь не является доктором");
-    }
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.status === 404) {
-      throw new Error("Доктор не найден");
-    }
-    throw new Error(error.response?.data?.message || "Доктор не найден");
-  }
-};
-</file>
-
 <file path="store/hooks.ts">
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import type { RootState, AppDispatch } from "./index";
 
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
-</file>
-
-<file path="store/slices/applicationSlice.ts">
-// store/slices/applicationSlice.ts
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import {
-  createApplicationByCoordinator as createApplicationApi,
-  sendToMedical as sendToMedicalApi,
-  getApplicationByConscript as getApplicationByConscriptApi,
-} from "@/api/application";
-
-import { getLMOByConscript as getLMOByConscriptApi } from "@/api/lmo";
-
-import {
-  Application,
-  CreateApplicationResponse,
-  LMO,
-} from "@/types/application";
-
-interface ApplicationState {
-  currentApplication: Application | null;
-  currentLMO: LMO | null;
-  loading: boolean;
-  error: string | null;
-  sendingToMedical: boolean;
-  sentToMedical: boolean;
-}
-
-const initialState: ApplicationState = {
-  currentApplication: null,
-  currentLMO: null,
-  loading: false,
-  error: null,
-  sendingToMedical: false,
-  sentToMedical: false,
-};
-
-export const createApplicationByCoordinator = createAsyncThunk(
-  "application/createByCoordinator",
-  async (
-    { iin, access }: { iin: string; access: string },
-    { rejectWithValue }
-  ) => {
-    try {
-      return await createApplicationApi(iin, access);
-    } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || "Ошибка создания заявки"
-      );
-    }
-  }
-);
-
-export const sendToMedical = createAsyncThunk(
-  "application/sendToMedical",
-  async (
-    { applicationId, access }: { applicationId: number; access: string },
-    { rejectWithValue }
-  ) => {
-    try {
-      return await sendToMedicalApi(applicationId, access);
-    } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || "Ошибка отправки на медосмотр"
-      );
-    }
-  }
-);
-
-export const getApplicationByConscript = createAsyncThunk<
-  Application | null,
-  { search: string; access: string },
-  { rejectValue: string }
->(
-  "application/getByConscript",
-  async ({ search, access }, { rejectWithValue }) => {
-    try {
-      const applications = await getApplicationByConscriptApi(search, access);
-
-      return applications.length > 0 ? applications[0] : null;
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Unknown error"
-      );
-    }
-  }
-);
-
-export const getLMOByConscript = createAsyncThunk<
-  LMO | null,
-  { search: string; access: string },
-  { rejectValue: string }
->(
-  "application/getLMOByConscript",
-  async ({ search, access }, { rejectWithValue }) => {
-    try {
-      const lmos = await getLMOByConscriptApi(search, access);
-      // Возвращаем первый LMO или null
-      return lmos.length > 0 ? lmos[0] : null;
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Unknown error"
-      );
-    }
-  }
-);
-
-const applicationSlice = createSlice({
-  name: "application",
-  initialState,
-  reducers: {
-    clearApplication: (state) => {
-      state.currentApplication = null;
-      state.currentLMO = null;
-      state.error = null;
-      state.sentToMedical = false;
-    },
-    clearError: (state) => {
-      state.error = null;
-    },
-  },
-  extraReducers: (builder) => {
-    builder
-      // Create application
-      .addCase(createApplicationByCoordinator.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(createApplicationByCoordinator.fulfilled, (state, action) => {
-        state.loading = false;
-        state.currentApplication = action.payload.application;
-        state.currentLMO = action.payload.lmo;
-      })
-      .addCase(createApplicationByCoordinator.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // Get application
-      .addCase(getApplicationByConscript.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getApplicationByConscript.fulfilled, (state, action) => {
-        state.loading = false;
-        state.currentApplication = action.payload;
-      })
-      .addCase(getApplicationByConscript.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // Get LMO
-      .addCase(getLMOByConscript.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getLMOByConscript.fulfilled, (state, action) => {
-        state.loading = false;
-        state.currentLMO = action.payload;
-        if (!action.payload) {
-          state.error = "ЛМО для призывника не найден";
-        } else {
-          state.error = null;
-        }
-      })
-      .addCase(getLMOByConscript.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Ошибка поиска ЛМО";
-        state.currentLMO = null;
-      })
-      // Send to medical
-      .addCase(sendToMedical.pending, (state) => {
-        state.sendingToMedical = true;
-        state.error = null;
-      })
-      .addCase(sendToMedical.fulfilled, (state) => {
-        state.sendingToMedical = false;
-        state.sentToMedical = true;
-      })
-      .addCase(sendToMedical.rejected, (state, action) => {
-        state.sendingToMedical = false;
-        state.error = action.payload as string;
-      });
-  },
-});
-
-export const { clearApplication, clearError } = applicationSlice.actions;
-export default applicationSlice.reducer;
 </file>
 
 <file path="store/slices/conscriptsSlice.ts">
@@ -909,108 +519,6 @@ export default recruitDashboardSlice.reducer;
 // export default registrationSlice.reducer
 </file>
 
-<file path="types/application.ts">
-import { MedicalSpeciality, User } from "./user";
-
-export interface Application {
-  id: number;
-  application_number: string;
-  applicant: User;
-  coordinator: User;
-  status: string; // draft? enum idk
-  status_display: string;
-  contact_phone: string;
-  contact_email: string;
-  current_address: string;
-  preferred_date: string | null;
-  preferred_time: string | null;
-  special_requirements: string;
-  has_chronic_diseases: boolean;
-  chronic_diseases_description: string;
-  takes_medications: boolean;
-  medications_description: string;
-  has_allergies: boolean;
-  allergies_description: string;
-  coordinator_notes: string;
-  scheduled_date: string | null;
-  lmo: number;
-  created_at: string;
-  updated_at: string;
-  completed_at: string | null;
-  documents: []; // gotta add document type
-  days_since_submitted: number;
-  can_edit: boolean;
-  detailed_status: string;
-}
-
-export interface MedicalRecord {
-  id: number;
-  doctor: User;
-  doctor_specialty: string;
-  examination_date: string;
-  examination_date_formatted: string;
-  diagnosis: string;
-  recommendations: string;
-  // measurements: []idk;
-  vision_od: string;
-  vision_os: string;
-  color_vision: string;
-  hearing_ad: string;
-  hearing_as: string;
-  is_signed: boolean;
-  signature_date: string;
-  // attachments: idk
-}
-
-export interface DoctorQueueElement {
-  id: number;
-  specialty: MedicalSpeciality;
-  order: number;
-  is_completed: boolean;
-  assigned_doctor: User | null;
-  assigned_doctor_name: string | null;
-}
-
-export interface LMO {
-  id: number;
-  number: string;
-  conscript: User;
-  coordinator: User;
-  status: string; // (enum better)
-  status_display: string;
-  odo_region: string;
-  osp_ddo_region: string;
-  assigned_team: string;
-  height: number;
-  weight: number;
-  chest_circumference: number;
-  spirometry: string;
-  bmi: number;
-  fitness_category: string;
-  fitness_category_display: string;
-  final_diagnosis: string;
-  commission_notes: string;
-  created_at: string;
-  updated_at: string;
-  completed_at: string | null;
-  doctor_queue: DoctorQueueElement;
-  medical_records: MedicalRecord[];
-  completed_specialties: MedicalSpeciality[];
-  pending_specialties: MedicalSpeciality[];
-  progress_percentage: number;
-  current_stage: string; // enum better i guess
-}
-
-export interface CreateApplicationResponse {
-  application: Application;
-  lmo: LMO;
-}
-
-// export interface GetApplicationsResponse {
-//   applications: Application[]
-// }
-</file>
-
 <file path="types/conscript.ts">
 import { User } from "@/types/user";
 import { Application, LMO } from "@/types/application";
@@ -1110,170 +618,469 @@ export const setupInterceptors = (
 };
 </file>
 
-<file path="store/slices/authSlice.ts">
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import {
-  login as loginApi,
-  getMe as getMeApi,
-  ecpLogin as ecpLoginApi,
-} from "@/api/auth";
-import type { User } from "@/types/user";
+<file path="api/application.ts">
+import { api } from "@/utils/api";
+import { User } from "@/types/user";
+import { Application, CreateApplicationResponse } from "@/types/application";
 
-interface AuthState {
-  access: string | null;
-  refresh: string | null;
-  isAuthenticated: boolean;
-  loading: boolean;
-  error: string | null;
-  user: User | null;
-}
-
-const initialState: AuthState = {
-  access: null,
-  refresh: null,
-  isAuthenticated: false,
-  loading: false,
-  error: null,
-  user: null,
+export const createApplicationByCoordinator = async (
+  iin: string,
+  access: string
+): Promise<CreateApplicationResponse> => {
+  const response = await api.post(
+    `/api/applications/create_by_coordinator/`,
+    { iin },
+    {
+      headers: {
+        Authorization: `Bearer ${access}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  return response.data;
 };
 
-// Async thunks остаются без изменений
-export const login = createAsyncThunk(
-  "auth/login",
-  async (data: { iin: string; password: string }, { rejectWithValue }) => {
-    try {
-      const res = await loginApi(data);
-      return res;
-    } catch (err: any) {
-      return rejectWithValue(err?.response?.data?.message || "Ошибка входа");
+export const sendToMedical = async (
+  applicationId: number,
+  access: string
+): Promise<{ message: string }> => {
+  const response = await api.post(
+    `/api/applications/${applicationId}/send_to_medical/`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${access}`,
+        "Content-Type": "application/json",
+      },
     }
-  }
-);
+  );
+  return response.data;
+};
 
-export const getMe = createAsyncThunk(
-  "auth/getMe",
-  async (access: string, { rejectWithValue }) => {
-    try {
-      const res = await getMeApi(access);
-      return res;
-    } catch (err: any) {
-      return rejectWithValue("Ошибка получения пользователя");
+export const getApplicationByConscript = async (
+  search: string,
+  access: string
+): Promise<Application[]> => {
+  const response = await api.get("/api/applications/", {
+    params: { search: search },
+    headers: {
+      Authorization: `Bearer ${access}`,
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
+};
+</file>
+
+<file path="api/auth.ts">
+import {
+  api,
+  getTokenCookie,
+  setTokenCookie,
+  removeTokenCookie,
+} from "@/utils/api";
+
+export const login = async (data: { iin: string; password: string }) => {
+  const response = await api.post(`/api/users/auth/login/`, data, {
+    headers: { "Content-Type": "application/json" },
+  });
+  setTokenCookie("access", response.data.access);
+  setTokenCookie("refresh", response.data.refresh);
+  return response.data;
+};
+
+export const getMe = async (access?: string) => {
+  const token = access || getTokenCookie("access");
+  const response = await api.get(`/api/users/me/`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+export const ecpLogin = async (data: {
+  p12_base64: string;
+  password: string;
+}) => {
+  const response = await api.post(`/api/users/auth/ecp-login/`, data, {
+    headers: { "Content-Type": "application/json" },
+  });
+  setTokenCookie("access", response.data.access);
+  setTokenCookie("refresh", response.data.refresh);
+  return response.data;
+};
+
+export const refreshToken = async (refresh?: string) => {
+  const token = refresh || getTokenCookie("refresh");
+  const response = await api.post(
+    `/api/users/auth/refresh/`,
+    { refresh: token },
+    {
+      headers: { "Content-Type": "application/json" },
     }
-  }
-);
+  );
+  setTokenCookie("access", response.data.access);
+  if (response.data.refresh) setTokenCookie("refresh", response.data.refresh);
+  return response.data;
+};
 
-export const ecpLogin = createAsyncThunk(
-  "auth/ecpLogin",
+export const logout = async (access?: string) => {
+  const token = access || getTokenCookie("access");
+  removeTokenCookie("access");
+  removeTokenCookie("refresh");
+  return api.post(
+    `/api/users/auth/logout/`,
+    {},
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+};
+</file>
+
+<file path="api/search.ts">
+import { DoctorList, User } from "@/types/user";
+import { api } from "@/utils/api";
+
+export interface SearchUserParams {
+  iin: string;
+  role?: "conscript" | "coordinator" | "doctor" | "commission";
+}
+
+export type DoctorSpeciality =
+  | "ФТИЗИАТР"
+  | "РЕНТГЕНОЛОГ"
+  | "ДЕРМАТОВЕНЕРОЛОГ"
+  | "ХИРУРГ"
+  | "НЕВРАПАТОЛОГ"
+  | "ПСИХИАТР"
+  | "НАРКОЛОГ"
+  | "СТОМАТОЛОГ"
+  | "ОФТАЛЬМОЛОГ"
+  | "СТОМАТОЛОГ"
+  | "ОТОРИНОЛАРИНГОЛОГ"
+  | "ТЕРАПЕВТ";
+
+export const searchUser = async (
+  iin: SearchUserParams,
+  access: string
+): Promise<User> => {
+  const response = await api.post(
+    `/api/users/search/`,
+    { iin },
+    {
+      headers: {
+        Authorization: `Bearer ${access}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  return response.data;
+};
+
+export const searchConscript = async (
+  iin: string,
+  access: string
+): Promise<User> => {
+  try {
+    const response = await api.post(
+      `/api/users/search/`,
+      { iin },
+      {
+        headers: {
+          Authorization: `Bearer ${access}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.data.role !== "conscript") {
+      throw new Error("Пользователь не является призывником");
+    }
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error("Призывник не найден");
+    }
+    throw new Error(error.response?.data?.message || "Призывник не найден");
+  }
+};
+
+export const searchCoordinator = async (
+  iin: string,
+  access: string
+): Promise<User> => {
+  try {
+    const response = await api.post(
+      `/api/users/search/`,
+      { iin },
+      {
+        headers: {
+          Authorization: `Bearer ${access}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.data.role !== "coordinator") {
+      throw new Error("Пользователь не является координатором");
+    }
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error("Координатор не найден");
+    }
+    throw new Error(error.response?.data?.message || "Координатор не найден");
+  }
+};
+
+export const searchDoctors = async (
+  speciality: DoctorSpeciality,
+  access: string
+): Promise<DoctorList[]> => {
+  try {
+    const response = await api.get(`/api/users/doctors/`, {
+      params: { speciality },
+      headers: {
+        Authorization: `Bearer ${access}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error("Доктор не найден");
+    }
+    throw new Error(error.response?.data?.message || "Доктор не найден");
+  }
+};
+</file>
+
+<file path="store/slices/applicationSlice.ts">
+// store/slices/applicationSlice.ts
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  createApplicationByCoordinator as createApplicationApi,
+  sendToMedical as sendToMedicalApi,
+  getApplicationByConscript as getApplicationByConscriptApi,
+} from "@/api/application";
+
+import {
+  getLMOByConscript as getLMOByConscriptApi,
+  getLMOById as getLMOByIdApi,
+} from "@/api/lmo";
+
+import {
+  Application,
+  CreateApplicationResponse,
+  LMO,
+} from "@/types/application";
+
+interface ApplicationState {
+  currentApplication: Application | null;
+  currentLMO: LMO | null;
+  loading: boolean;
+  error: string | null;
+  sendingToMedical: boolean;
+  sentToMedical: boolean;
+}
+
+const initialState: ApplicationState = {
+  currentApplication: null,
+  currentLMO: null,
+  loading: false,
+  error: null,
+  sendingToMedical: false,
+  sentToMedical: false,
+};
+
+export const createApplicationByCoordinator = createAsyncThunk(
+  "application/createByCoordinator",
   async (
-    data: { p12_base64: string; password: string },
+    { iin, access }: { iin: string; access: string },
     { rejectWithValue }
   ) => {
     try {
-      const res = await ecpLoginApi(data);
-      return res;
+      return await createApplicationApi(iin, access);
     } catch (err: any) {
       return rejectWithValue(
-        err?.response?.data?.message || "Ошибка входа по ЭЦП"
+        err.response?.data?.message || "Ошибка создания заявки"
       );
     }
   }
 );
 
-const authSlice = createSlice({
-  name: "auth",
+export const sendToMedical = createAsyncThunk(
+  "application/sendToMedical",
+  async (
+    { applicationId, access }: { applicationId: number; access: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      return await sendToMedicalApi(applicationId, access);
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || "Ошибка отправки на медосмотр"
+      );
+    }
+  }
+);
+
+export const getApplicationByConscript = createAsyncThunk<
+  Application | null,
+  { search: string; access: string },
+  { rejectValue: string }
+>(
+  "application/getByConscript",
+  async ({ search, access }, { rejectWithValue }) => {
+    try {
+      const applications = await getApplicationByConscriptApi(search, access);
+
+      return applications.length > 0 ? applications[0] : null;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+);
+
+export const getLMOByConscript = createAsyncThunk<
+  LMO | null,
+  { search: string; access: string },
+  { rejectValue: string }
+>(
+  "application/getLMOByConscript",
+  async ({ search, access }, { rejectWithValue }) => {
+    try {
+      const lmos = await getLMOByConscriptApi(search, access);
+      // Возвращаем первый LMO или null
+      console.log(lmos[0]);
+      return lmos.length > 0 ? lmos[0] : null;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+);
+
+export const getLMOById = createAsyncThunk<
+  LMO | null,
+  { lmoId: number; access: string },
+  { rejectValue: string }
+>("application/getLMOById", async ({ lmoId, access }, { rejectWithValue }) => {
+  try {
+    const lmo = await getLMOByIdApi(lmoId, access);
+    // LMO
+    return lmo;
+  } catch (error) {
+    return rejectWithValue(
+      error instanceof Error ? error.message : "Unknown error"
+    );
+  }
+});
+
+const applicationSlice = createSlice({
+  name: "application",
   initialState,
   reducers: {
-    logout: (state) => {
-      state.access = null;
-      state.refresh = null;
-      state.isAuthenticated = false;
+    clearApplication: (state) => {
+      state.currentApplication = null;
+      state.currentLMO = null;
       state.error = null;
-      state.user = null;
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("access");
-        localStorage.removeItem("refresh");
-      }
+      state.sentToMedical = false;
     },
-    setTokens: (
-      state,
-      action: PayloadAction<{ access: string; refresh: string }>
-    ) => {
-      state.access = action.payload.access;
-      state.refresh = action.payload.refresh;
-      state.isAuthenticated = true;
-    },
-    rehydrateAuth: (state) => {
-      if (typeof window !== "undefined") {
-        const access = localStorage.getItem("access");
-        const refresh = localStorage.getItem("refresh");
-
-        if (access) {
-          state.access = access;
-          state.isAuthenticated = true;
-        }
-        if (refresh) {
-          state.refresh = refresh;
-        }
-      }
+    clearError: (state) => {
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
-    // Остальная логика остается без изменений
     builder
-      .addCase(login.pending, (state) => {
+      // Create application
+      .addCase(createApplicationByCoordinator.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(login.fulfilled, (state, action) => {
+      .addCase(createApplicationByCoordinator.fulfilled, (state, action) => {
         state.loading = false;
-        state.access = action.payload.access;
-        state.refresh = action.payload.refresh;
-        state.isAuthenticated = true;
-        if (typeof window !== "undefined") {
-          localStorage.setItem("access", action.payload.access);
-          localStorage.setItem("refresh", action.payload.refresh);
-        }
+        state.currentApplication = action.payload.application;
+        state.currentLMO = action.payload.lmo;
       })
-      .addCase(login.rejected, (state, action) => {
+      .addCase(createApplicationByCoordinator.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(getMe.pending, (state) => {
+      // Get application
+      .addCase(getApplicationByConscript.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getMe.fulfilled, (state, action) => {
+      .addCase(getApplicationByConscript.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        state.currentApplication = action.payload;
       })
-      .addCase(getMe.rejected, (state, action) => {
+      .addCase(getApplicationByConscript.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(ecpLogin.pending, (state) => {
+      // Get LMO
+      .addCase(getLMOByConscript.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(ecpLogin.fulfilled, (state, action) => {
+      .addCase(getLMOByConscript.fulfilled, (state, action) => {
         state.loading = false;
-        state.access = action.payload.access;
-        state.refresh = action.payload.refresh;
-        state.user = action.payload.user;
-        state.isAuthenticated = true;
-        if (typeof window !== "undefined") {
-          localStorage.setItem("access", action.payload.access);
-          localStorage.setItem("refresh", action.payload.refresh);
+        state.currentLMO = action.payload;
+        if (!action.payload) {
+          state.error = "ЛМО для призывника не найден";
+        } else {
+          state.error = null;
         }
       })
-      .addCase(ecpLogin.rejected, (state, action) => {
+      .addCase(getLMOByConscript.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload || "Ошибка поиска ЛМО";
+        state.currentLMO = null;
+      })
+      // Get LMO by id
+      .addCase(getLMOById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getLMOById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentLMO = action.payload;
+        if (!action.payload) {
+          state.error = "ЛМО для призывника не найден";
+        } else {
+          state.error = null;
+        }
+      })
+      .addCase(getLMOById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Ошибка поиска ЛМО";
+        state.currentLMO = null;
+      })
+      // Send to medical
+      .addCase(sendToMedical.pending, (state) => {
+        state.sendingToMedical = true;
+        state.error = null;
+      })
+      .addCase(sendToMedical.fulfilled, (state) => {
+        state.sendingToMedical = false;
+        state.sentToMedical = true;
+      })
+      .addCase(sendToMedical.rejected, (state, action) => {
+        state.sendingToMedical = false;
         state.error = action.payload as string;
       });
   },
 });
 
-export const { logout, setTokens, rehydrateAuth } = authSlice.actions;
-export default authSlice.reducer;
+export const { clearApplication, clearError } = applicationSlice.actions;
+export default applicationSlice.reducer;
 </file>
 
 <file path="store/slices/searchSlice.ts">
@@ -1417,6 +1224,268 @@ export const { clearSearchResults, clearError } = searchSlice.actions;
 export default searchSlice.reducer;
 </file>
 
+<file path="types/application.ts">
+import { MedicalSpeciality, User } from "./user";
+
+export interface Application {
+  id: number;
+  application_number: string;
+  applicant: User;
+  coordinator: User;
+  status: string; // draft? enum idk
+  status_display: string;
+  contact_phone: string;
+  contact_email: string;
+  current_address: string;
+  preferred_date: string | null;
+  preferred_time: string | null;
+  special_requirements: string;
+  has_chronic_diseases: boolean;
+  chronic_diseases_description: string;
+  takes_medications: boolean;
+  medications_description: string;
+  has_allergies: boolean;
+  allergies_description: string;
+  coordinator_notes: string;
+  scheduled_date: string | null;
+  lmo: number;
+  created_at: string;
+  updated_at: string;
+  completed_at: string | null;
+  documents: []; // gotta add document type
+  days_since_submitted: number;
+  can_edit: boolean;
+  detailed_status: string;
+}
+
+export interface MedicalRecord {
+  id: number;
+  doctor: User;
+  doctor_specialty: string;
+  examination_date: string;
+  examination_date_formatted: string;
+  diagnosis: string;
+  recommendations: string;
+  // measurements: []idk;
+  vision_od: string;
+  vision_os: string;
+  color_vision: string;
+  hearing_ad: string;
+  hearing_as: string;
+  is_signed: boolean;
+  signature_date: string;
+  // attachments: idk
+}
+
+export interface DoctorQueueElement {
+  id: number;
+  specialty: MedicalSpeciality;
+  order: number;
+  is_completed: boolean;
+  assigned_doctor: User | null;
+  assigned_doctor_name: string | null;
+}
+
+export interface LMO {
+  id: number;
+  number: string;
+  conscript: User;
+  coordinator: User;
+  status: string; // (enum better)
+  status_display: string;
+  odo_region: string;
+  osp_ddo_region: string;
+  assigned_team: string;
+  height: number;
+  weight: number;
+  chest_circumference: number;
+  spirometry: string;
+  bmi: number;
+  fitness_category: string;
+  fitness_category_display: string;
+  final_diagnosis: string;
+  commission_notes: string;
+  created_at: string;
+  updated_at: string;
+  completed_at: string | null;
+  doctor_queue: DoctorQueueElement[];
+  medical_records: MedicalRecord[];
+  completed_specialties: MedicalSpeciality[];
+  pending_specialties: MedicalSpeciality[];
+  progress_percentage: number;
+  current_stage: string; // enum better i guess
+}
+
+export interface CreateApplicationResponse {
+  application: Application;
+  lmo: LMO;
+}
+
+// export interface GetApplicationsResponse {
+//   applications: Application[]
+// }
+</file>
+
+<file path="store/slices/authSlice.ts">
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import {
+  login as loginApi,
+  getMe as getMeApi,
+  ecpLogin as ecpLoginApi,
+} from "@/api/auth";
+import type { User } from "@/types/user";
+import { getTokenCookie, setTokenCookie, removeTokenCookie } from "@/utils/api";
+
+interface AuthState {
+  access: string | null;
+  refresh: string | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  error: string | null;
+  user: User | null;
+}
+
+const initialState: AuthState = {
+  access: null,
+  refresh: null,
+  isAuthenticated: false,
+  loading: false,
+  error: null,
+  user: null,
+};
+
+// Async thunks остаются без изменений
+export const login = createAsyncThunk(
+  "auth/login",
+  async (data: { iin: string; password: string }, { rejectWithValue }) => {
+    try {
+      const res = await loginApi(data);
+      return res;
+    } catch (err: any) {
+      return rejectWithValue(err?.response?.data?.message || "Ошибка входа");
+    }
+  }
+);
+
+export const getMe = createAsyncThunk(
+  "auth/getMe",
+  async (access: string, { rejectWithValue }) => {
+    try {
+      const res = await getMeApi(access);
+      return res;
+    } catch (err: any) {
+      return rejectWithValue("Ошибка получения пользователя");
+    }
+  }
+);
+
+export const ecpLogin = createAsyncThunk(
+  "auth/ecpLogin",
+  async (
+    data: { p12_base64: string; password: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const res = await ecpLoginApi(data);
+      return res;
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message || "Ошибка входа по ЭЦП"
+      );
+    }
+  }
+);
+
+const authSlice = createSlice({
+  name: "auth",
+  initialState,
+  reducers: {
+    logout: (state) => {
+      state.access = null;
+      state.refresh = null;
+      state.isAuthenticated = false;
+      state.error = null;
+      state.user = null;
+      removeTokenCookie("access");
+      removeTokenCookie("refresh");
+    },
+    setTokens: (
+      state,
+      action: PayloadAction<{ access: string; refresh: string }>
+    ) => {
+      state.access = action.payload.access;
+      state.refresh = action.payload.refresh;
+      state.isAuthenticated = true;
+      setTokenCookie("access", action.payload.access);
+      setTokenCookie("refresh", action.payload.refresh);
+    },
+    rehydrateAuth: (state) => {
+      const access = getTokenCookie("access");
+      const refresh = getTokenCookie("refresh");
+      if (access) {
+        state.access = access;
+        state.isAuthenticated = true;
+      }
+      if (refresh) {
+        state.refresh = refresh;
+      }
+    },
+  },
+  extraReducers: (builder) => {
+    // Остальная логика остается без изменений
+    builder
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        state.access = action.payload.access;
+        state.refresh = action.payload.refresh;
+        state.isAuthenticated = true;
+        setTokenCookie("access", action.payload.access);
+        setTokenCookie("refresh", action.payload.refresh);
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(getMe.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getMe.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(getMe.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(ecpLogin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(ecpLogin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.access = action.payload.access;
+        state.refresh = action.payload.refresh;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+        setTokenCookie("access", action.payload.access);
+        setTokenCookie("refresh", action.payload.refresh);
+      })
+      .addCase(ecpLogin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+  },
+});
+
+export const { logout, setTokens, rehydrateAuth } = authSlice.actions;
+export default authSlice.reducer;
+</file>
+
 <file path="types/user.ts">
 export interface MedicalSpeciality {
   id: number;
@@ -1467,10 +1536,34 @@ export interface User {
   doctor_profile: DoctorProfile | null;
   coordinator_profile: CoordinatorProfile | null;
 }
+
+export interface DoctorList {
+  id: number;
+  full_name: string;
+  doctor_profile: DoctorProfile;
+}
 </file>
 
 <file path="utils/api.ts">
 import axios from "axios";
+import { store } from "@/store";
+import { refreshToken as refreshTokenApi } from "@/api/auth";
+import { setTokens, logout } from "@/store/slices/authSlice";
+import { serialize, parse } from "cookie";
+
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -1480,6 +1573,81 @@ export const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+export function setTokenCookie(name: string, value: string, days = 7) {
+  document.cookie = serialize(name, value, {
+    path: "/",
+    maxAge: 60 * 60 * 24 * days,
+    secure: true,
+    sameSite: "lax",
+  });
+}
+
+export function getTokenCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const cookies = parse(document.cookie || "");
+  return cookies[name] || null;
+}
+
+export function removeTokenCookie(name: string) {
+  document.cookie = serialize(name, "", {
+    path: "/",
+    maxAge: -1,
+  });
+}
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      error.response.data?.code === "token_not_valid" &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true;
+      if (isRefreshing) {
+        return new Promise(function (resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers["Authorization"] = "Bearer " + token;
+            return api(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+      isRefreshing = true;
+      const refresh = getTokenCookie("refresh");
+      if (!refresh) {
+        store.dispatch(logout());
+        isRefreshing = false;
+        return Promise.reject(error);
+      }
+      try {
+        const data = await refreshTokenApi(refresh);
+        store.dispatch(
+          setTokens({ access: data.access, refresh: data.refresh || refresh })
+        );
+        setTokenCookie("access", data.access);
+        if (data.refresh) setTokenCookie("refresh", data.refresh);
+        api.defaults.headers["Authorization"] = "Bearer " + data.access;
+        processQueue(null, data.access);
+        originalRequest.headers["Authorization"] = "Bearer " + data.access;
+        return api(originalRequest);
+      } catch (err) {
+        processQueue(err, null);
+        store.dispatch(logout());
+        return Promise.reject(err);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 </file>
 
 <file path="store/index.ts">

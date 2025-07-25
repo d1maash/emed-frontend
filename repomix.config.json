@@ -1,4 +1,10 @@
 {
-  "include": ["store/**", "api/**", "utils/**", "types/**"],
+  "include": [
+    "store/**",
+    "api/**",
+    "utils/**",
+    "types/**",
+    "coordinator/conscripts/**"
+  ],
   "ignore": {}
 }

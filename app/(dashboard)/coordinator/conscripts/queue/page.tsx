@@ -63,15 +63,18 @@ const ConscriptsQueuePage = () => {
     sentToMedical,
   } = useAppSelector((state) => state.application);
 
-  const updateSearchParams = (iin: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (iin) {
-      params.set("iin", iin);
-    } else {
-      params.delete("iin");
-    }
-    router.replace(`?${params.toString()}`);
-  };
+  const updateSearchParams = useCallback(
+    (iin: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (iin) {
+        params.set("iin", iin);
+      } else {
+        params.delete("iin");
+      }
+      router.replace(`?${params.toString()}`);
+    },
+    [searchParams, router]
+  );
 
   // Функция для первоначального поиска с проверкой application
   const handleInitialSearch = useCallback(
