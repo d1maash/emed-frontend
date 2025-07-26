@@ -40,6 +40,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { GetDoctorsBySpecialityID } from "@/api/doctors";
+import { cn } from "@/lib/utils";
 
 const Page = () => {
   const { lmoId } = useParams<{ lmoId: string }>();
@@ -182,8 +183,15 @@ const Page = () => {
     <div className="p-6 max-w-5xl mx-auto flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>
-            {user.full_name} #{user.id}
+          <CardTitle className="flex justify-between items-center">
+            <div className="text-2xl">
+              {user.full_name} #{user.id}
+            </div>
+            {applicationList?.[0].status == "submitted" && (
+              <p className="rounded-xl border py-4 px-6">
+                Отправлен на медосмотр
+              </p>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -227,7 +235,7 @@ const Page = () => {
                           <p>Порядок: {dq.order}</p>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p>Доктор: {doctorName}</p>
+                          <p>Доктор:</p>
 
                           {openedItems.includes(dq.id.toString()) && (
                             <>
@@ -308,7 +316,12 @@ const Page = () => {
             <p>Осмотры не найдены</p>
           )}
         </CardContent>
-        <CardFooter className="flex gap-3">
+        <CardFooter
+          className={cn(
+            "flex justify-between",
+            applicationList?.[0].status !== "draft" && "hidden"
+          )}
+        >
           <MyButton
             onClick={handleSendToMedical}
             disabled={
