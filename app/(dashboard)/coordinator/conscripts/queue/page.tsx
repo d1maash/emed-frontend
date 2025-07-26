@@ -413,7 +413,7 @@ const ConscriptsQueuePage: React.FC = () => {
           onClick={() => {
             const lmoId = currentLMO?.id ?? lmoList?.[0]?.id;
             if (lmoId) {
-              router.push(`/coordinator/conscripts/lmo/${!lmoList?.[0].id}`);
+              router.push(`/coordinator/conscripts/lmo/${lmoList?.[0].id}`);
             }
           }}
         >
