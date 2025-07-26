@@ -1,10 +1,10 @@
-import { LMO } from "@/types/application";
+import { LMODetail, LMOList } from "@/types/lmo";
 import { api } from "@/utils/api";
 
-export const getLMOByConscript = async (
+export const getLMOList = async (
   search: string,
   access: string
-): Promise<LMO[]> => {
+): Promise<LMOList[]> => {
   const response = await api.get("/api/medical/lmos/", {
     params: { search: search },
     headers: {
@@ -18,7 +18,7 @@ export const getLMOByConscript = async (
 export const getLMOById = async (
   lmoId: number,
   access: string
-): Promise<LMO> => {
+): Promise<LMODetail> => {
   const response = await api.get(`/api/medical/lmos/${lmoId}`, {
     headers: {
       Authorization: `Bearer ${access}`,
@@ -35,7 +35,7 @@ export const assignDoctor = async (
   access: string
 ): Promise<{ doctorId: number; queueId: number }> => {
   const response = await api.post(
-    `api/medical/lmos/${lmoId}/assign-doctor`,
+    `api/medical/lmos/${lmoId}/assign-doctor/`,
     {
       doctor_id: doctorId,
       queue_id: queueId,

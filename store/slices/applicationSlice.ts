@@ -3,23 +3,26 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import {
   createApplicationByCoordinator as createApplicationApi,
   sendToMedical as sendToMedicalApi,
-  getApplicationByConscript as getApplicationByConscriptApi,
+  getApplicationsList as getApplicationsListApi,
+  getApplicationById as getApplicationByIdApi,
 } from "@/api/application";
 
-import {
-  getLMOByConscript as getLMOByConscriptApi,
-  getLMOById as getLMOByIdApi,
-} from "@/api/lmo";
+import { assignDoctor as assignDoctorApi } from "@/api/lmo";
 
 import {
-  Application,
-  CreateApplicationResponse,
-  LMO,
+  ConscriptApplicationDetail,
+  ConscriptApplicationList,
 } from "@/types/application";
+import { LMODetail, LMOList } from "@/types/lmo";
+
+interface AssignedDoctorStatus {
+  loading: boolean;
+  error: string | null;
+}
 
 interface ApplicationState {
-  currentApplication: Application | null;
-  currentLMO: LMO | null;
+  applicationList: ConscriptApplicationList[] | null;
+  currentApplication: ConscriptApplicationDetail | null;
   loading: boolean;
   error: string | null;
   sendingToMedical: boolean;
@@ -27,30 +30,15 @@ interface ApplicationState {
 }
 
 const initialState: ApplicationState = {
+  applicationList: null,
   currentApplication: null,
-  currentLMO: null,
   loading: false,
   error: null,
   sendingToMedical: false,
   sentToMedical: false,
 };
 
-export const createApplicationByCoordinator = createAsyncThunk(
-  "application/createByCoordinator",
-  async (
-    { iin, access }: { iin: string; access: string },
-    { rejectWithValue }
-  ) => {
-    try {
-      return await createApplicationApi(iin, access);
-    } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || "Ошибка создания заявки"
-      );
-    }
-  }
-);
-
+// Thunk для отправки на медосмотр
 export const sendToMedical = createAsyncThunk(
   "application/sendToMedical",
   async (
@@ -67,57 +55,37 @@ export const sendToMedical = createAsyncThunk(
   }
 );
 
-export const getApplicationByConscript = createAsyncThunk<
-  Application | null,
+// ~ Оставляем
+// Thunk для получения заявки по призывнику
+export const getApplicationList = createAsyncThunk<
+  ConscriptApplicationList[] | null,
   { search: string; access: string },
   { rejectValue: string }
->(
-  "application/getByConscript",
-  async ({ search, access }, { rejectWithValue }) => {
-    try {
-      const applications = await getApplicationByConscriptApi(search, access);
-
-      return applications.length > 0 ? applications[0] : null;
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Unknown error"
-      );
-    }
-  }
-);
-
-export const getLMOByConscript = createAsyncThunk<
-  LMO | null,
-  { search: string; access: string },
-  { rejectValue: string }
->(
-  "application/getLMOByConscript",
-  async ({ search, access }, { rejectWithValue }) => {
-    try {
-      const lmos = await getLMOByConscriptApi(search, access);
-      // Возвращаем первый LMO или null
-      console.log(lmos[0]);
-      return lmos.length > 0 ? lmos[0] : null;
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Unknown error"
-      );
-    }
-  }
-);
-
-export const getLMOById = createAsyncThunk<
-  LMO | null,
-  { lmoId: number; access: string },
-  { rejectValue: string }
->("application/getLMOById", async ({ lmoId, access }, { rejectWithValue }) => {
+>("application/getList", async ({ search, access }, { rejectWithValue }) => {
   try {
-    const lmo = await getLMOByIdApi(lmoId, access);
-    // LMO
-    return lmo;
+    const applications = await getApplicationsListApi(search, access);
+    return applications.length > 0 ? applications : null;
   } catch (error) {
     return rejectWithValue(
       error instanceof Error ? error.message : "Unknown error"
+    );
+  }
+});
+
+export const getApplicationById = createAsyncThunk<
+  ConscriptApplicationDetail,
+  {
+    id: number;
+    access: string;
+  },
+  { rejectValue: string }
+>("application/getById", async ({ id, access }, { rejectWithValue }) => {
+  try {
+    const application = await getApplicationByIdApi(id, access);
+    return application;
+  } catch (error) {
+    return rejectWithValue(
+      error instanceof Error ? "error.message" : "Unknown error"
     );
   }
 });
@@ -126,84 +94,52 @@ const applicationSlice = createSlice({
   name: "application",
   initialState,
   reducers: {
+    clearApplicationList: (state) => {
+      state.applicationList = null;
+      state.error = null;
+    },
     clearApplication: (state) => {
       state.currentApplication = null;
-      state.currentLMO = null;
       state.error = null;
       state.sentToMedical = false;
     },
     clearError: (state) => {
       state.error = null;
     },
+    setCurrentApplication: (state, action) => {
+      state.currentApplication = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
-      // Create application
-      .addCase(createApplicationByCoordinator.pending, (state) => {
+      // * Get application by id - gets ConscriptApplicationDetail.
+      .addCase(getApplicationById.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(createApplicationByCoordinator.fulfilled, (state, action) => {
-        state.loading = false;
-        state.currentApplication = action.payload.application;
-        state.currentLMO = action.payload.lmo;
-      })
-      .addCase(createApplicationByCoordinator.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // Get application
-      .addCase(getApplicationByConscript.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getApplicationByConscript.fulfilled, (state, action) => {
+      .addCase(getApplicationById.fulfilled, (state, action) => {
         state.loading = false;
         state.currentApplication = action.payload;
       })
-      .addCase(getApplicationByConscript.rejected, (state, action) => {
+      .addCase(getApplicationById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Get LMO
-      .addCase(getLMOByConscript.pending, (state) => {
+      // *Get application list - gets Application list. Can be used to search by iin of one user
+      .addCase(getApplicationList.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getLMOByConscript.fulfilled, (state, action) => {
+      .addCase(getApplicationList.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentLMO = action.payload;
-        if (!action.payload) {
-          state.error = "ЛМО для призывника не найден";
-        } else {
-          state.error = null;
-        }
+        state.applicationList = action.payload;
       })
-      .addCase(getLMOByConscript.rejected, (state, action) => {
+      .addCase(getApplicationList.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Ошибка поиска ЛМО";
-        state.currentLMO = null;
+        state.error = action.payload as string;
       })
-      // Get LMO by id
-      .addCase(getLMOById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getLMOById.fulfilled, (state, action) => {
-        state.loading = false;
-        state.currentLMO = action.payload;
-        if (!action.payload) {
-          state.error = "ЛМО для призывника не найден";
-        } else {
-          state.error = null;
-        }
-      })
-      .addCase(getLMOById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Ошибка поиска ЛМО";
-        state.currentLMO = null;
-      })
-      // Send to medical
+
+      // *Send to medical - sends conscript to medical
       .addCase(sendToMedical.pending, (state) => {
         state.sendingToMedical = true;
         state.error = null;
@@ -219,5 +155,10 @@ const applicationSlice = createSlice({
   },
 });
 
-export const { clearApplication, clearError } = applicationSlice.actions;
+export const {
+  clearApplication,
+  clearApplicationList,
+  clearError,
+  setCurrentApplication,
+} = applicationSlice.actions;
 export default applicationSlice.reducer;

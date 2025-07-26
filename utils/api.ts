@@ -28,6 +28,7 @@ export const api = axios.create({
 });
 
 export function setTokenCookie(name: string, value: string, days = 7) {
+  if (typeof document === "undefined") return;
   document.cookie = serialize(name, value, {
     path: "/",
     maxAge: 60 * 60 * 24 * days,
@@ -43,6 +44,7 @@ export function getTokenCookie(name: string): string | null {
 }
 
 export function removeTokenCookie(name: string) {
+  if (typeof document === "undefined") return;
   document.cookie = serialize(name, "", {
     path: "/",
     maxAge: -1,
@@ -101,5 +103,3 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// export { api };

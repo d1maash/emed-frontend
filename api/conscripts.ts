@@ -1,5 +1,5 @@
 import { api } from "@/utils/api";
-import { Conscript } from "@/types/conscript";
+// import { Conscript } from "@/types/conscript";
 import { User } from "@/types/user";
 
 export const listConscripts = async (

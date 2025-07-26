@@ -1,6 +1,15 @@
 import { api } from "@/utils/api";
 import { User } from "@/types/user";
-import { Application, CreateApplicationResponse } from "@/types/application";
+import {
+  ConscriptApplicationDetail,
+  ConscriptApplicationList,
+} from "@/types/application";
+import { LMODetail } from "@/types/lmo";
+
+export interface CreateApplicationResponse {
+  application: ConscriptApplicationDetail;
+  lmo: LMODetail;
+}
 
 export const createApplicationByCoordinator = async (
   iin: string,
@@ -36,12 +45,25 @@ export const sendToMedical = async (
   return response.data;
 };
 
-export const getApplicationByConscript = async (
+export const getApplicationsList = async (
   search: string,
   access: string
-): Promise<Application[]> => {
+): Promise<ConscriptApplicationList[]> => {
   const response = await api.get("/api/applications/", {
     params: { search: search },
+    headers: {
+      Authorization: `Bearer ${access}`,
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
+};
+
+export const getApplicationById = async (
+  id: number,
+  access: string
+): Promise<ConscriptApplicationDetail> => {
+  const response = await api.get(`/api/applications/${id}/`, {
     headers: {
       Authorization: `Bearer ${access}`,
       "Content-Type": "application/json",
