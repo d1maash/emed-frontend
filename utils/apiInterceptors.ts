@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
@@ -15,7 +15,7 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 export const setupInterceptors = (
-  apiInstance: any,
+  apiInstance: AxiosInstance,
   onTokenRefresh: (access: string, refresh?: string) => void,
   onLogout: () => void,
   refreshTokenFn: (

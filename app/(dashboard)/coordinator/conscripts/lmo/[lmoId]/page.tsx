@@ -4,8 +4,8 @@ import LoadingScreen from "@/components/LoadingScreen";
 import MyButton from "@/components/myui/MyButton";
 import {
   Accordion,
-  AccordionTrigger,
   AccordionItem,
+  AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
 import {
@@ -18,14 +18,18 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  getApplicationByConscript,
-  getLMOById,
+  getApplicationById,
+  getApplicationList,
   sendToMedical,
-  assignDoctorThunk,
-  clearApplication,
 } from "@/store/slices/applicationSlice";
+import {
+  getLMOById,
+  assignDoctorThunk,
+  clearLMO,
+  clearError as clearLMOError,
+} from "@/store/slices/lmoSlice";
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { DoctorList } from "@/types/user";
 
 import {
@@ -45,12 +49,17 @@ const Page = () => {
   const access = useAppSelector((state) => state.auth.access);
   const {
     currentLMO,
-    currentApplication,
-    loading,
-    error,
+    loading: lmoLoading,
+    error: lmoError,
+    assignedDoctorsStatus,
+  } = useAppSelector((state) => state.lmo);
+
+  const {
+    applicationList,
+    loading: appLoading,
+    error: appError,
     sendingToMedical,
     sentToMedical,
-    assignedDoctorsStatus,
   } = useAppSelector((state) => state.application);
 
   const [doctorsBySpecialty, setDoctorsBySpecialty] = useState<
@@ -61,38 +70,37 @@ const Page = () => {
   >({});
   const [openedItems, setOpenedItems] = useState<string[]>([]);
 
-  // Синхронизация выбранных докторов при загрузке currentLMO
+  // Инициализация выбранных докторов при загрузке currentLMO
   useEffect(() => {
     if (currentLMO?.doctor_queue) {
-      const initSelected: Record<number, number | null> = {};
+      const initialSelected: Record<number, number | null> = {};
       currentLMO.doctor_queue.forEach((dq) => {
-        initSelected[dq.id] = dq.assigned_doctor?.id ?? null;
+        initialSelected[dq.id] = dq.assigned_doctor?.id ?? null;
       });
-      setSelectedDoctors(initSelected);
+      setSelectedDoctors(initialSelected);
     }
   }, [currentLMO?.doctor_queue]);
 
+  // Загрузка LMO и application при изменении lmoId или access
   useEffect(() => {
     if (!lmoId || !access) return;
 
     (async () => {
       try {
-        dispatch(clearApplication()); // Очистить предыдущее состояние
+        dispatch(clearLMO());
+        dispatch(clearLMOError());
 
-        const newLMO = await dispatch(
-          getLMOById({ lmoId: parseInt(lmoId), access })
+        const lmo = await dispatch(
+          getLMOById({ lmoId: Number(lmoId), access })
         ).unwrap();
 
-        if (!newLMO) {
+        if (!lmo) {
           router.replace("/coordinator/conscripts/lmo");
           return;
         }
 
         await dispatch(
-          getApplicationByConscript({
-            search: newLMO.conscript.iin,
-            access,
-          })
+          getApplicationList({ search: lmo.conscript.iin, access })
         ).unwrap();
       } catch {
         router.replace("/coordinator/conscripts/lmo");
@@ -100,21 +108,21 @@ const Page = () => {
     })();
   }, [lmoId, access, dispatch, router]);
 
-  const loadDoctors = async (specialtyId: number) => {
-    if (!access) return;
-    if (doctorsBySpecialty[specialtyId]) return; // Уже загружены
-
-    try {
-      const doctors = await GetDoctorsBySpecialityID(specialtyId, access);
-      setDoctorsBySpecialty((prev) => ({ ...prev, [specialtyId]: doctors }));
-    } catch (e) {
-      console.error("Ошибка загрузки докторов", e);
-    }
-  };
+  const loadDoctors = useCallback(
+    async (specialtyId: number) => {
+      if (!access || doctorsBySpecialty[specialtyId]) return;
+      try {
+        const doctors = await GetDoctorsBySpecialityID(specialtyId, access);
+        setDoctorsBySpecialty((prev) => ({ ...prev, [specialtyId]: doctors }));
+      } catch (error) {
+        console.error("Ошибка загрузки докторов", error);
+      }
+    },
+    [access, doctorsBySpecialty]
+  );
 
   const onAccordionChange = (openItems: string[]) => {
     setOpenedItems(openItems);
-
     openItems.forEach((idStr) => {
       const dq = currentLMO?.doctor_queue.find(
         (dq) => dq.id.toString() === idStr
@@ -147,20 +155,25 @@ const Page = () => {
   };
 
   const handleSendToMedical = async () => {
-    if (!currentApplication?.id || !access) return;
+    if (!applicationList?.[0]?.id || !access) return;
 
     try {
       await dispatch(
-        sendToMedical({ applicationId: currentApplication.id, access })
+        sendToMedical({ applicationId: applicationList?.[0]?.id, access })
       ).unwrap();
-      // TODO: уведомление успешной отправки
+      // TODO: notify success
     } catch {
-      // TODO: уведомление об ошибке
+      // TODO: notify error
     }
   };
 
-  if (loading) return <LoadingScreen />;
-  if (error) return <div className="p-6 text-red-600">Ошибка: {error}</div>;
+  if (lmoLoading || appLoading) return <LoadingScreen />;
+  if (lmoError || appError)
+    return (
+      <div className="p-6 text-red-600">
+        Ошибка: {lmoError ?? appError ?? "Неизвестная ошибка"}
+      </div>
+    );
   if (!currentLMO) return <div className="p-6">ЛМО не найден</div>;
 
   const user = currentLMO.conscript;
@@ -204,18 +217,18 @@ const Page = () => {
                   loading: false,
                   error: null,
                 };
-
                 return (
                   <AccordionItem key={dq.id} value={dq.id.toString()}>
                     <AccordionTrigger>{dq.specialty.name}</AccordionTrigger>
                     <AccordionContent>
-                      <div className="flex justify-between items-center gap-4 flex-wrap">
+                      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 flex-wrap">
                         <div>
                           <p>Завершено: {dq.is_completed ? "Да" : "Нет"}</p>
                           <p>Порядок: {dq.order}</p>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
                           <p>Доктор: {doctorName}</p>
+
                           {openedItems.includes(dq.id.toString()) && (
                             <>
                               {!doctorsBySpecialty[dq.specialty.id] ? (
@@ -232,11 +245,10 @@ const Page = () => {
                                         : "none"
                                     }
                                     onValueChange={(value) => {
-                                      if (value === "none") {
-                                        onSelectDoctor(dq.id, null);
-                                      } else {
-                                        onSelectDoctor(dq.id, Number(value));
-                                      }
+                                      onSelectDoctor(
+                                        dq.id,
+                                        value === "none" ? null : Number(value)
+                                      );
                                     }}
                                   >
                                     <SelectTrigger className="w-52">
@@ -299,7 +311,9 @@ const Page = () => {
         <CardFooter className="flex gap-3">
           <MyButton
             onClick={handleSendToMedical}
-            disabled={!currentApplication || sendingToMedical || sentToMedical}
+            disabled={
+              !applicationList?.[0] || sendingToMedical || sentToMedical
+            }
           >
             {sendingToMedical ? "Отправка..." : "Отправить на медосмотр"}
           </MyButton>

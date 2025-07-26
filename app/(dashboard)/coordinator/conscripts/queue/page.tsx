@@ -1,5 +1,8 @@
 "use client";
 
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
 import MyButton from "@/components/myui/MyButton";
 import {
   Card,
@@ -10,22 +13,27 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/Input";
+
 import { Search, FileText, Stethoscope } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import React, { useState, useEffect, useCallback } from "react";
+
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+
 import {
-  clearError,
+  clearError as clearSearchError,
   clearSearchResults,
   searchConscript,
 } from "@/store/slices/searchSlice";
+
 import {
-  createApplicationByCoordinator,
   sendToMedical,
   clearApplication,
-  getApplicationByConscript,
-  getLMOByConscript,
+  getApplicationList,
 } from "@/store/slices/applicationSlice";
+
+import { getLMOList } from "@/store/slices/lmoSlice";
+
+import { createApplicationWithLMOByCoordinator } from "@/store/thunks/createApplicationWithLMO";
+
 import { z } from "zod";
 
 const searchSchema = z.object({
@@ -36,7 +44,7 @@ const searchSchema = z.object({
     .regex(/^\d+$/, "ИИН должен содержать только цифры"),
 });
 
-const ConscriptsQueuePage = () => {
+const ConscriptsQueuePage: React.FC = () => {
   const [search, setSearch] = useState("");
   const [validationError, setValidationError] = useState("");
   const [step, setStep] = useState<
@@ -53,16 +61,25 @@ const ConscriptsQueuePage = () => {
     loading: searchLoading,
     error: searchError,
   } = useAppSelector((state) => state.search);
+
   const { access } = useAppSelector((state) => state.auth);
+
   const {
     currentApplication,
-    currentLMO,
+    applicationList,
     loading: appLoading,
     error: appError,
     sendingToMedical,
-    sentToMedical,
   } = useAppSelector((state) => state.application);
 
+  const {
+    currentLMO,
+    lmoList,
+    loading: lmoLoading,
+    error: lmoError,
+  } = useAppSelector((state) => state.lmo);
+
+  // Update URL query param ?iin=
   const updateSearchParams = useCallback(
     (iin: string) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -73,10 +90,10 @@ const ConscriptsQueuePage = () => {
       }
       router.replace(`?${params.toString()}`);
     },
-    [searchParams, router]
+    [router, searchParams]
   );
 
-  // Функция для первоначального поиска с проверкой application
+  // Initial search on page load if ?iin= param present
   const handleInitialSearch = useCallback(
     async (iinValue: string) => {
       if (!access) return;
@@ -87,26 +104,40 @@ const ConscriptsQueuePage = () => {
         searchSchema.parse({ iin: iinValue });
         setValidationError("");
 
-        dispatch(clearError());
+        dispatch(clearSearchError());
+        dispatch(clearApplication());
+        dispatch(clearSearchResults());
+
+        // Search conscript info (name, iin etc)
         const searchResult = await dispatch(
           searchConscript({ iin: iinValue, access })
         );
 
         if (searchConscript.fulfilled.match(searchResult)) {
+          // Get application list (if any) for that iin
           const appResult = await dispatch(
-            getApplicationByConscript({ search: iinValue, access })
+            getApplicationList({ search: iinValue, access })
           );
 
-          if (getApplicationByConscript.fulfilled.match(appResult)) {
-            const application = appResult.payload;
-            if (application) {
-              await dispatch(getLMOByConscript({ search: iinValue, access }));
-              setStep("application");
+          if (getApplicationList.fulfilled.match(appResult)) {
+            const applications = appResult.payload;
+            if (applications && applications.length > 0) {
+              // application есть
+              console.log("application found");
+              const lmoResult = await dispatch(
+                getLMOList({ search: iinValue, access })
+              );
+              if (getLMOList.fulfilled.match(lmoResult)) {
+                const lmos = lmoResult.payload;
+                if (lmos && lmos.length > 0) {
+                  console.log("lmo found");
+                  setStep("application");
+                }
+              }
             } else {
               setStep("found");
             }
           } else {
-            // Handle rejected or pending (unlikely here since awaited)
             setStep("found");
           }
 
@@ -131,14 +162,18 @@ const ConscriptsQueuePage = () => {
     }
   }, [searchParams, access, handleInitialSearch]);
 
+  // Clear states on unmount/reset
   useEffect(() => {
-    dispatch(clearSearchResults());
-    dispatch(clearApplication());
+    return () => {
+      dispatch(clearSearchResults());
+      dispatch(clearApplication());
+      dispatch(clearSearchError());
+    };
   }, [dispatch]);
 
-  // Обычный поиск (для ручного ввода)
+  // Handle manual search input + button click
   const handleSearch = async (iinValue?: string) => {
-    const iinToSearch = iinValue || search;
+    const iinToSearch = iinValue ?? search;
 
     try {
       searchSchema.parse({ iin: iinToSearch });
@@ -146,12 +181,16 @@ const ConscriptsQueuePage = () => {
 
       if (access) {
         updateSearchParams(iinToSearch);
-        dispatch(clearError());
+
+        dispatch(clearSearchError());
+        dispatch(clearApplication());
+        dispatch(clearSearchResults());
+
         const result = await dispatch(
           searchConscript({ iin: iinToSearch, access })
         );
 
-        if (searchConscript.fulfilled.match(result) && currentApplication) {
+        if (searchConscript.fulfilled.match(result)) {
           setStep("found");
         }
       }
@@ -162,21 +201,23 @@ const ConscriptsQueuePage = () => {
     }
   };
 
+  // Создать заявку с ЛМО
   const handleCreateApplication = async () => {
     if (!searchResults?.[0].iin || !access) return;
 
     const result = await dispatch(
-      createApplicationByCoordinator({
+      createApplicationWithLMOByCoordinator({
         iin: searchResults[0].iin,
         access,
       })
     );
 
-    if (createApplicationByCoordinator.fulfilled.match(result)) {
+    if (createApplicationWithLMOByCoordinator.fulfilled.match(result)) {
       setStep("application");
     }
   };
 
+  // Отправить заявку на медкомиссию
   const handleSendToMedical = async () => {
     if (!currentApplication?.id || !access) return;
 
@@ -192,6 +233,7 @@ const ConscriptsQueuePage = () => {
     }
   };
 
+  // Сброс всего поиска
   const handleReset = () => {
     setSearch("");
     setStep("search");
@@ -199,9 +241,9 @@ const ConscriptsQueuePage = () => {
     updateSearchParams("");
     dispatch(clearSearchResults());
     dispatch(clearApplication());
+    dispatch(clearSearchError());
   };
 
-  // Показываем загрузку при первоначальной проверке
   if (isInitialLoading) {
     return (
       <div className="w-full mx-auto flex justify-center">
@@ -219,6 +261,7 @@ const ConscriptsQueuePage = () => {
     );
   }
 
+  // --- Render functions (UI) ---
   const renderSearchForm = () => (
     <Card className="w-max flex items-center flex-col p-2">
       <CardHeader>
@@ -312,29 +355,36 @@ const ConscriptsQueuePage = () => {
         <div className="space-y-2">
           <p>
             <strong>Призывник:</strong>{" "}
-            {searchResults?.[0]?.full_name ||
-              currentApplication?.applicant?.full_name}
+            {searchResults?.[0]?.full_name ??
+              currentApplication?.applicant?.full_name ??
+              applicationList?.[0].applicant?.full_name}
           </p>
           <p>
-            <strong>ID заявки:</strong> {currentApplication?.id}
+            <strong>ID заявки:</strong>{" "}
+            {currentApplication?.id ?? applicationList?.[0].id}
           </p>
           <p>
-            <strong>Статус:</strong> {currentApplication?.status_display}
+            <strong>Статус:</strong>{" "}
+            {currentApplication?.status_display ??
+              applicationList?.[0].status_display}
           </p>
           {currentLMO && (
             <div className="mt-4 p-3 bg-gray-50 rounded">
               <h4 className="font-semibold mb-2">Назначенное ЛМО:</h4>
               <p>
-                <strong>ID:</strong> {currentLMO.id}
+                <strong>ID:</strong> {currentLMO.id ?? lmoList?.[0].id}
               </p>
               <p>
-                <strong>Номер:</strong> {currentLMO.number}
+                <strong>Номер:</strong>{" "}
+                {currentLMO.number ?? lmoList?.[0].number}
               </p>
               <p>
-                <strong>Статус:</strong> {currentLMO.status_display}
+                <strong>Статус:</strong>{" "}
+                {currentLMO.status_display ?? lmoList?.[0].status_display}
               </p>
               <p>
-                <strong>Текущий этап:</strong> {currentLMO.current_stage}
+                <strong>Текущий этап:</strong>{" "}
+                {currentLMO.current_stage ?? "Неизвестно"}
               </p>
             </div>
           )}
@@ -345,6 +395,7 @@ const ConscriptsQueuePage = () => {
         <MyButton onClick={handleReset} variant="outline" className="flex-1">
           Новый поиск
         </MyButton>
+
         {currentApplication?.status === "draft" && (
           <MyButton
             onClick={handleSendToMedical}
@@ -354,20 +405,22 @@ const ConscriptsQueuePage = () => {
             {sendingToMedical ? "Отправка..." : "Отправить на медосмотр"}
           </MyButton>
         )}
+
         <MyButton
           className="flex-1"
-          disabled={!currentLMO}
-          variant={currentLMO ? null : "outline"}
+          disabled={!currentLMO && !lmoList?.[0]}
+          variant={currentLMO || !lmoList?.[0] ? undefined : "outline"}
           onClick={() => {
-            if (currentLMO) {
-              router.push(`/coordinator/conscripts/lmo/${currentLMO.id}`);
+            const lmoId = currentLMO?.id ?? lmoList?.[0]?.id;
+            if (lmoId) {
+              router.push(`/coordinator/conscripts/lmo/${!lmoList?.[0].id}`);
             }
           }}
         >
           ЛМО (Лист медицинского освидетельствования)
         </MyButton>
       </CardFooter>
-      {!currentLMO && (
+      {!currentLMO && !lmoList?.[0] && (
         <p className="text-red-500 text-sm mt-2">
           ЛМО для данного призывника не найдено.
         </p>
@@ -387,7 +440,7 @@ const ConscriptsQueuePage = () => {
         <div className="space-y-2">
           <p>
             <strong>Призывник:</strong>{" "}
-            {searchResults?.[0]?.full_name ||
+            {searchResults?.[0]?.full_name ??
               currentApplication?.applicant?.full_name}
           </p>
           <p>
@@ -408,16 +461,15 @@ const ConscriptsQueuePage = () => {
 
   return (
     <div className="w-full mx-auto flex justify-center">
-      <div className=" grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         {step === "search" && renderSearchForm()}
         {step === "found" && renderFoundUser()}
         {step === "application" && renderApplicationCreated()}
         {step === "medical" && renderMedicalSent()}
+
         <MyButton
-          onClick={() => {
-            router.push("/coordinator/conscripts");
-          }}
-          variant={"outline"}
+          onClick={() => router.push("/coordinator/conscripts")}
+          variant="outline"
           className="py-2 w-full max-h-max"
         >
           Таблица призывников
