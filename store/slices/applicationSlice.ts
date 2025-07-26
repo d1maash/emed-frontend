@@ -11,11 +11,14 @@ import {
   getLMOById as getLMOByIdApi,
 } from "@/api/lmo";
 
-import {
-  Application,
-  CreateApplicationResponse,
-  LMO,
-} from "@/types/application";
+import { assignDoctor as assignDoctorApi } from "@/api/lmo";
+
+import { Application, LMO } from "@/types/application";
+
+interface AssignedDoctorStatus {
+  loading: boolean;
+  error: string | null;
+}
 
 interface ApplicationState {
   currentApplication: Application | null;
@@ -24,6 +27,7 @@ interface ApplicationState {
   error: string | null;
   sendingToMedical: boolean;
   sentToMedical: boolean;
+  assignedDoctorsStatus: Record<number, AssignedDoctorStatus>; // doctor_queue id → статус назначения
 }
 
 const initialState: ApplicationState = {
@@ -33,8 +37,10 @@ const initialState: ApplicationState = {
   error: null,
   sendingToMedical: false,
   sentToMedical: false,
+  assignedDoctorsStatus: {},
 };
 
+// Thunk для создания заявки
 export const createApplicationByCoordinator = createAsyncThunk(
   "application/createByCoordinator",
   async (
@@ -51,6 +57,7 @@ export const createApplicationByCoordinator = createAsyncThunk(
   }
 );
 
+// Thunk для отправки на медосмотр
 export const sendToMedical = createAsyncThunk(
   "application/sendToMedical",
   async (
@@ -67,6 +74,7 @@ export const sendToMedical = createAsyncThunk(
   }
 );
 
+// Thunk для получения заявки по призывнику
 export const getApplicationByConscript = createAsyncThunk<
   Application | null,
   { search: string; access: string },
@@ -76,7 +84,6 @@ export const getApplicationByConscript = createAsyncThunk<
   async ({ search, access }, { rejectWithValue }) => {
     try {
       const applications = await getApplicationByConscriptApi(search, access);
-
       return applications.length > 0 ? applications[0] : null;
     } catch (error) {
       return rejectWithValue(
@@ -86,6 +93,7 @@ export const getApplicationByConscript = createAsyncThunk<
   }
 );
 
+// Thunk для получения LMO по призывнику
 export const getLMOByConscript = createAsyncThunk<
   LMO | null,
   { search: string; access: string },
@@ -96,7 +104,6 @@ export const getLMOByConscript = createAsyncThunk<
     try {
       const lmos = await getLMOByConscriptApi(search, access);
       // Возвращаем первый LMO или null
-      console.log(lmos[0]);
       return lmos.length > 0 ? lmos[0] : null;
     } catch (error) {
       return rejectWithValue(
@@ -106,6 +113,7 @@ export const getLMOByConscript = createAsyncThunk<
   }
 );
 
+// Thunk для получения LMO по id
 export const getLMOById = createAsyncThunk<
   LMO | null,
   { lmoId: number; access: string },
@@ -113,7 +121,6 @@ export const getLMOById = createAsyncThunk<
 >("application/getLMOById", async ({ lmoId, access }, { rejectWithValue }) => {
   try {
     const lmo = await getLMOByIdApi(lmoId, access);
-    // LMO
     return lmo;
   } catch (error) {
     return rejectWithValue(
@@ -121,6 +128,25 @@ export const getLMOById = createAsyncThunk<
     );
   }
 });
+
+// Thunk назначения доктора
+export const assignDoctorThunk = createAsyncThunk<
+  { doctorQueueId: number; doctorId: number },
+  { lmoId: number; doctorId: number; queueId: number; access: string },
+  { rejectValue: string }
+>(
+  "application/assignDoctor",
+  async ({ lmoId, doctorId, queueId, access }, { rejectWithValue }) => {
+    try {
+      await assignDoctorApi(lmoId, doctorId, queueId, access);
+      return { doctorQueueId: queueId, doctorId };
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || "Ошибка назначения доктора"
+      );
+    }
+  }
+);
 
 const applicationSlice = createSlice({
   name: "application",
@@ -131,9 +157,15 @@ const applicationSlice = createSlice({
       state.currentLMO = null;
       state.error = null;
       state.sentToMedical = false;
+      state.assignedDoctorsStatus = {};
     },
     clearError: (state) => {
       state.error = null;
+    },
+    clearCurrentLMO: (state) => {
+      state.currentLMO = null;
+      state.error = null;
+      state.assignedDoctorsStatus = {};
     },
   },
   extraReducers: (builder) => {
@@ -152,6 +184,7 @@ const applicationSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+
       // Get application
       .addCase(getApplicationByConscript.pending, (state) => {
         state.loading = true;
@@ -165,7 +198,8 @@ const applicationSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Get LMO
+
+      // Get LMO by conscript
       .addCase(getLMOByConscript.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -184,6 +218,7 @@ const applicationSlice = createSlice({
         state.error = action.payload || "Ошибка поиска ЛМО";
         state.currentLMO = null;
       })
+
       // Get LMO by id
       .addCase(getLMOById.pending, (state) => {
         state.loading = true;
@@ -203,6 +238,7 @@ const applicationSlice = createSlice({
         state.error = action.payload || "Ошибка поиска ЛМО";
         state.currentLMO = null;
       })
+
       // Send to medical
       .addCase(sendToMedical.pending, (state) => {
         state.sendingToMedical = true;
@@ -215,9 +251,45 @@ const applicationSlice = createSlice({
       .addCase(sendToMedical.rejected, (state, action) => {
         state.sendingToMedical = false;
         state.error = action.payload as string;
+      })
+
+      // Assign doctor
+      .addCase(assignDoctorThunk.pending, (state, action) => {
+        const queueId = action.meta.arg.queueId;
+        state.assignedDoctorsStatus[queueId] = { loading: true, error: null };
+      })
+      .addCase(assignDoctorThunk.fulfilled, (state, action) => {
+        const { doctorQueueId, doctorId } = action.payload;
+        if (!state.currentLMO) return;
+
+        // Обновляем локально assigned_doctor_name и assigned_doctor с заглушкой
+        const dqIndex = state.currentLMO.doctor_queue.findIndex(
+          (dq) => dq.id === doctorQueueId
+        );
+        if (dqIndex !== -1) {
+          // Можно оставить пустое assigned_doctor_name - обновить по актуальным данным из UI/запроса
+          state.currentLMO.doctor_queue[dqIndex].assigned_doctor = {
+            id: doctorId,
+            full_name: "", // либо актуальное имя, если есть
+          } as any;
+          state.currentLMO.doctor_queue[dqIndex].assigned_doctor_name = "";
+        }
+
+        state.assignedDoctorsStatus[doctorQueueId] = {
+          loading: false,
+          error: null,
+        };
+      })
+      .addCase(assignDoctorThunk.rejected, (state, action) => {
+        const queueId = action.meta.arg.queueId;
+        state.assignedDoctorsStatus[queueId] = {
+          loading: false,
+          error: action.payload || "Ошибка назначения доктора",
+        };
       });
   },
 });
 
-export const { clearApplication, clearError } = applicationSlice.actions;
+export const { clearApplication, clearCurrentLMO, clearError } =
+  applicationSlice.actions;
 export default applicationSlice.reducer;

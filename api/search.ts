@@ -6,20 +6,6 @@ export interface SearchUserParams {
   role?: "conscript" | "coordinator" | "doctor" | "commission";
 }
 
-export type DoctorSpeciality =
-  | "ФТИЗИАТР"
-  | "РЕНТГЕНОЛОГ"
-  | "ДЕРМАТОВЕНЕРОЛОГ"
-  | "ХИРУРГ"
-  | "НЕВРАПАТОЛОГ"
-  | "ПСИХИАТР"
-  | "НАРКОЛОГ"
-  | "СТОМАТОЛОГ"
-  | "ОФТАЛЬМОЛОГ"
-  | "СТОМАТОЛОГ"
-  | "ОТОРИНОЛАРИНГОЛОГ"
-  | "ТЕРАПЕВТ";
-
 export const searchUser = async (
   iin: SearchUserParams,
   access: string
@@ -90,26 +76,5 @@ export const searchCoordinator = async (
       throw new Error("Координатор не найден");
     }
     throw new Error(error.response?.data?.message || "Координатор не найден");
-  }
-};
-
-export const searchDoctors = async (
-  speciality: DoctorSpeciality,
-  access: string
-): Promise<DoctorList[]> => {
-  try {
-    const response = await api.get(`/api/users/doctors/`, {
-      params: { speciality },
-      headers: {
-        Authorization: `Bearer ${access}`,
-        "Content-Type": "application/json",
-      },
-    });
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.status === 404) {
-      throw new Error("Доктор не найден");
-    }
-    throw new Error(error.response?.data?.message || "Доктор не найден");
   }
 };

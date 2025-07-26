@@ -35,7 +35,7 @@ export const assignDoctor = async (
   access: string
 ): Promise<{ doctorId: number; queueId: number }> => {
   const response = await api.post(
-    `api/medical/lmos/${lmoId}/assign-doctor`,
+    `api/medical/lmos/${lmoId}/assign-doctor/`,
     {
       doctor_id: doctorId,
       queue_id: queueId,
