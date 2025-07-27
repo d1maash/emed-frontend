@@ -1,3 +1,4 @@
+import { GetActiveLMOsResponse, GetArchiveLMOsResponse } from "@/types/doctor";
 import { LMODetail, LMOList } from "@/types/lmo";
 import { api } from "@/utils/api";
 
@@ -47,6 +48,32 @@ export const assignDoctor = async (
       },
     }
   );
+
+  return response.data;
+};
+
+export const GetActiveLMOs = async (
+  access: string
+): Promise<GetActiveLMOsResponse> => {
+  const response = await api.get("api/users/dashboard/doctor/active-lmos/", {
+    headers: {
+      Authorization: `Bearer ${access}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  return response.data;
+};
+
+export const GetArchiveLMOs = async (
+  access: string
+): Promise<GetArchiveLMOsResponse> => {
+  const response = await api.get("api/users/dashboard/doctor/archive-lmos/", {
+    headers: {
+      Authorization: `Bearer ${access}`,
+      "Content-Type": "application/json",
+    },
+  });
 
   return response.data;
 };

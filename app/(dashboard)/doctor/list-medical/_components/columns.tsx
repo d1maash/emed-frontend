@@ -1,10 +1,11 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ListMedical } from "./types";
 import { Ellipsis } from "lucide-react";
+import { LMOList } from "@/types/lmo";
+import { formatDateDmmmmYYYY } from "@/utils/dateUtils";
 
-export const columns: ColumnDef<ListMedical>[] = [
+export const columns: ColumnDef<LMOList>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -39,9 +40,9 @@ export const columns: ColumnDef<ListMedical>[] = [
     header: "ФИО",
     cell: ({ row }) => (
       <div>
-        <div>{row.original.fullname}</div>
+        <div>{row.original.conscript.full_name}</div>
         <div className="text-xs text-muted-foreground">
-          {row.original.position}
+          {row.original.conscript.email}
         </div>
       </div>
     ),
@@ -50,25 +51,25 @@ export const columns: ColumnDef<ListMedical>[] = [
   {
     accessorKey: "iin",
     header: "ИИН",
-    cell: ({ row }) => row.original.iin,
+    cell: ({ row }) => row.original.conscript.iin,
     size: 120,
   },
   {
-    accessorKey: "examType",
-    header: "Тип осмотра",
-    cell: ({ row }) => row.original.examType,
+    accessorKey: "fitnessCategory",
+    header: "Спортивная категория",
+    cell: ({ row }) => row.original.fitness_category_display,
     size: 140,
   },
   {
-    accessorKey: "examDate",
-    header: "Дата осмотра",
-    cell: ({ row }) => row.original.examDate,
+    accessorKey: "createDate",
+    header: "Дата создания",
+    cell: ({ row }) => <CreateDateCell date={row.original.created_at} />,
     size: 140,
   },
   {
     accessorKey: "status",
     header: "Статус",
-    cell: ({ row }) => <span>{row.original.status}</span>,
+    cell: ({ row }) => <span>{row.original.status_display}</span>,
     size: 120,
   },
   {
@@ -90,3 +91,9 @@ export const columns: ColumnDef<ListMedical>[] = [
     enableHiding: false,
   },
 ];
+
+const CreateDateCell: React.FC<{ date: string }> = ({ date }) => {
+  const formattedDate = formatDateDmmmmYYYY(date);
+
+  return <>{formattedDate}</>;
+};

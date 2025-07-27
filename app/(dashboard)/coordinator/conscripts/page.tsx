@@ -39,8 +39,7 @@ const searchSchema = z.object({
   search: z
     .string()
     .min(1, "Введите поисковый запрос")
-    .max(50, "Максимальная длина запроса 50 символов")
-    .optional(),
+    .max(50, "Максимальная длина запроса 50 символов"),
 });
 
 const CoordinatorConscriptsPage = () => {
@@ -158,7 +157,7 @@ const CoordinatorConscriptsPage = () => {
     setVoenkomat(undefined);
     setValidationError("");
     dispatch(clearConscripts());
-    router.replace(window.location.pathname);
+    // router.replace(window.location.pathname);
   };
 
   const hasActiveFilters = search || status || voenkomat;
