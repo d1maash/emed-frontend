@@ -39,7 +39,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { GetDoctorsBySpecialityID } from "@/api/doctors";
+import { getDoctorsBySpecialityID } from "@/api/doctors";
 import { cn } from "@/lib/utils";
 
 const Page = () => {
@@ -113,7 +113,7 @@ const Page = () => {
     async (specialtyId: number) => {
       if (!access || doctorsBySpecialty[specialtyId]) return;
       try {
-        const doctors = await GetDoctorsBySpecialityID(specialtyId, access);
+        const doctors = await getDoctorsBySpecialityID(specialtyId, access);
         setDoctorsBySpecialty((prev) => ({ ...prev, [specialtyId]: doctors }));
       } catch (error) {
         console.error("Ошибка загрузки докторов", error);

@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer, { setTokens, logout } from "./slices/authSlice";
 import recruitDashboardReducer from "./slices/recruitDashboardSlice";
 import coordinatorDashboardReducer from "./slices/coordinatorDashboardSlice";
+import doctorDashboardReducer from "./slices/doctorDashboardSlice";
 import searchReducer from "./slices/searchSlice";
 import applicationReducer from "./slices/applicationSlice";
 import lmoReducer from "./slices/lmoSlice";
@@ -15,6 +16,7 @@ export const store = configureStore({
     auth: authReducer,
     recruitDashboard: recruitDashboardReducer,
     coordinatorDashboard: coordinatorDashboardReducer,
+    doctorDashboard: doctorDashboardReducer,
     application: applicationReducer,
     lmo: lmoReducer,
     conscripts: conscriptsReducer,

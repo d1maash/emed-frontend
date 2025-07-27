@@ -9,7 +9,6 @@ export interface MedicalRecord {
   examination_date_formatted: string;
   diagnosis: string;
   recommendations: string;
-  // measurements: []idk; TODO: Clarify
   vision_od: string;
   vision_os: string;
   color_vision: string;
@@ -17,6 +16,7 @@ export interface MedicalRecord {
   hearing_as: string;
   is_signed: boolean;
   signature_date: string;
+  // measurements: []idk; TODO: Clarify
   // attachments: idk; TODO: Clarify
 }
 

@@ -14,7 +14,7 @@ export enum DoctorSpecialty {
   ЭНДОКРИНОЛОГ = 10,
 }
 
-export const GetDoctorsBySpecialityID = async (
+export const getDoctorsBySpecialityID = async (
   specialty_id: DoctorSpecialty | number,
   access: string
 ): Promise<DoctorList[]> => {
@@ -26,4 +26,13 @@ export const GetDoctorsBySpecialityID = async (
     },
   });
   return response.data;
+};
+
+export const getDoctorDashboard = async (access: string) => {
+  const response = await api.get("/api/users/dashboard/doctor/", {
+    headers: {
+      Authorization: `Bearer ${access}`,
+      "Content-Type": "application/json",
+    },
+  });
 };

@@ -1,11 +1,34 @@
-import React from "react";
+"use client";
+
+import React, { useEffect } from "react";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { SquareArrowOutUpRight } from "lucide-react";
 import { ChartAreaGradient } from "./_components/AreaChart";
 import { Calendar } from "@/components/ui/calendar";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { getDoctorDashboard } from "@/store/slices/doctorDashboardSlice";
+import LoadingScreen from "@/components/LoadingScreen";
 
-const page = () => {
+const Page = () => {
+  const dispatch = useAppDispatch();
+  const {
+    data = null,
+    loading = false,
+    error = null,
+  } = useAppSelector((state) => state.doctorDashboard || {});
+  const access = useAppSelector((state) => state.auth.access);
+  const user = useAppSelector((state) => state.auth.user);
+
+  useEffect(() => {
+    if (user && user.role === "doctor" && !data && access) {
+      dispatch(getDoctorDashboard(access));
+    }
+  }, [user, data, access, dispatch]);
+
+  if (!user || user.role !== "doctor" || loading) return <LoadingScreen />;
+  if (error) return <div className="text-red-500">{error}</div>;
+
   return (
     <div className="px-2 py-4 md:px-6 md:py-8">
       <h1 className="text-2xl md:text-4xl font-bold mb-6">
@@ -105,4 +128,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

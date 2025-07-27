@@ -21,9 +21,10 @@ import {
 } from "@/components/ui/table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LMOList } from "@/types/lmo";
 
 interface ListMedicalTableProps {
-  data: ListMedical[];
+  data: LMOList[];
 }
 
 export const ListMedicalTable: React.FC<ListMedicalTableProps> = ({ data }) => {
