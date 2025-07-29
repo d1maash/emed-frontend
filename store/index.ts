@@ -3,6 +3,7 @@ import authReducer, { setTokens, logout } from "./slices/authSlice";
 import recruitDashboardReducer from "./slices/recruitDashboardSlice";
 import coordinatorDashboardReducer from "./slices/coordinatorDashboardSlice";
 import doctorDashboardReducer from "./slices/doctorDashboardSlice";
+import commissionDashboardReducer from "./slices/commissionDashboardSlice";
 import searchReducer from "./slices/searchSlice";
 import applicationReducer from "./slices/applicationSlice";
 import lmoReducer from "./slices/lmoSlice";
@@ -17,6 +18,7 @@ export const store = configureStore({
     recruitDashboard: recruitDashboardReducer,
     coordinatorDashboard: coordinatorDashboardReducer,
     doctorDashboard: doctorDashboardReducer,
+    commissionDashboard: commissionDashboardReducer,
     application: applicationReducer,
     lmo: lmoReducer,
     conscripts: conscriptsReducer,

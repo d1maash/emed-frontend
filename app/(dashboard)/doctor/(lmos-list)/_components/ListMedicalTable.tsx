@@ -10,7 +10,6 @@ import {
   SortingState,
 } from "@tanstack/react-table";
 import { columns } from "./columns";
-import { ListMedical } from "./types";
 import {
   Table,
   TableBody,
@@ -21,10 +20,10 @@ import {
 } from "@/components/ui/table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { LMOList } from "@/types/lmo";
+import { DoctorDashboardLMO } from "@/types/doctor";
 
 interface ListMedicalTableProps {
-  data: LMOList[];
+  data: DoctorDashboardLMO[];
 }
 
 export const ListMedicalTable: React.FC<ListMedicalTableProps> = ({ data }) => {

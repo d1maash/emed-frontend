@@ -3,16 +3,36 @@
 import DecorationCard from "@/components/myui/DecorationCard";
 import { RecruitTable } from "./_components/recruit-table/RecruitTable";
 import { Recruit } from "./_components/recruit-table/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { Search } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { ru } from "date-fns/locale";
 import { Separator } from "@/components/ui/separator";
 import DateBlocks, { MeetingBlock } from "./_components/DateBlocks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import LoadingScreen from "@/components/LoadingScreen";
+import { getCommissionDashboard } from "@/store/slices/commissionDashboardSlice";
 
 const Page = () => {
+  const dispatch = useAppDispatch();
+  const {
+    data = null,
+    loading = false,
+    error = null,
+  } = useAppSelector((state) => state.commissionDashboard || {});
+  const access = useAppSelector((state) => state.auth.access);
+  const user = useAppSelector((state) => state.auth.user);
   const [globalFilter, setGlobalFilter] = useState("");
+
+  useEffect(() => {
+    if (user && user.role === "commission" && !data && access) {
+      dispatch(getCommissionDashboard(access));
+    }
+  }, [user, data, access, dispatch]);
+
+  if (!user || user.role !== "commission" || loading) return <LoadingScreen />;
+  if (error) return <div className="text-red-500">{error}</div>;
 
   const filteredRecruits = recruits.filter((r) => {
     const matchesText =

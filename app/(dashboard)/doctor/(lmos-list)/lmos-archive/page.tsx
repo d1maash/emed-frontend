@@ -4,14 +4,16 @@ import { useCallback, useEffect, useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Search, SlidersHorizontal } from "lucide-react";
-import { listMedicalData } from "./_components/data";
-import { ListMedicalTable } from "./_components/ListMedicalTable";
+import { ListMedicalTable } from "../_components/ListMedicalTable";
 import z from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useDebounce } from "@/app/hooks/useDebounce";
-import { clearLMO, clearLMOList, getLMOList } from "@/store/slices/lmoSlice";
-import { LMOList } from "@/types/lmo";
+import {
+  clearArchiveLMOsList,
+  GetArchiveLMOs,
+} from "@/store/slices/doctorDashboardSlice";
+import { DoctorDashboardLMO } from "@/types/doctor";
 
 const searchSchema = z.object({
   search: z
@@ -27,7 +29,9 @@ export default function ListMedicalPage() {
   const dispatch = useAppDispatch();
 
   // redux state
-  const { lmoList, loading, error } = useAppSelector((state) => state.lmo);
+  const { archiveLMOsList, loading, error } = useAppSelector(
+    (state) => state.doctorDashboard
+  );
   const { access } = useAppSelector((state) => state.auth);
 
   // params
@@ -35,7 +39,7 @@ export default function ListMedicalPage() {
   const [status, setStatus] = useState<string | undefined>(undefined);
   const [validationError, setValidationError] = useState("");
 
-  const debouncedSearch = useDebounce(search, 1000);
+  // const debouncedSearch = useDebounce(search, 500);
 
   useEffect(() => {
     const searchParam = searchParams.get("search");
@@ -63,48 +67,50 @@ export default function ListMedicalPage() {
     [searchParams, router]
   );
 
-  // API request function
-  const performSearch = useCallback(
-    async (searchTerm: string) => {
-      if (!access) return;
-
-      if (!searchTerm.trim()) {
-        dispatch(clearLMOList());
-        return;
-      }
-
-      try {
-        searchSchema.parse({ search: searchTerm });
-        setValidationError("");
-
-        const result = await dispatch(
-          getLMOList({
-            search: searchTerm,
-            access,
-          })
-        );
-
-        if (getLMOList.fulfilled.match(result)) {
-          updateSearchParams({ search: searchTerm });
-        }
-      } catch (err) {
-        if (err instanceof z.ZodError) {
-          setValidationError(err.errors[0].message);
-        }
-      }
-    },
-    [access, dispatch, updateSearchParams]
-  );
-
   useEffect(() => {
-    if (debouncedSearch.trim()) {
-      performSearch(debouncedSearch);
-    } else {
-      // Очищаем результаты если поле поиска пустое
-      dispatch(clearLMOList());
-      updateSearchParams({ search: "" });
+    if (access) {
+      dispatch(GetArchiveLMOs(access));
     }
-  }, [debouncedSearch, performSearch, dispatch, updateSearchParams]);
+  }, [access, dispatch]);
+
+  // // API request function (with server sorting)
+  // const performSearch = useCallback(
+  //   async (searchTerm: string) => {
+  //     if (!access) return;
+
+  //     if (!searchTerm.trim()) {
+  //       dispatch(clearActiveLMOsList());
+  //       dispatch(clearArchiveLMOsList());
+  //       return;
+  //     }
+
+  //     try {
+  //       searchSchema.parse({ search: searchTerm });
+  //       setValidationError("");
+
+  //       const result = await dispatch(GetArchiveLMOs(access));
+
+  //       if (GetArchiveLMOs.fulfilled.match(result)) {
+  //         updateSearchParams({ search: searchTerm });
+  //       }
+  //     } catch (err) {
+  //       if (err instanceof z.ZodError) {
+  //         setValidationError(err.errors[0].message);
+  //       }
+  //     }
+  //   },
+  //   [access, dispatch, updateSearchParams]
+  // );
+
+  // useEffect(() => {
+  //   if (debouncedSearch.trim()) {
+  //     performSearch(debouncedSearch);
+  //   } else {
+  //     // Очищаем результаты если поле поиска пустое
+  //     dispatch(clearActiveLMOsList());
+  //     updateSearchParams({ search: "" });
+  //   }
+  // }, [debouncedSearch, performSearch, dispatch, updateSearchParams]);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -119,17 +125,23 @@ export default function ListMedicalPage() {
 
   // clear
   const clearAllFilters = () => {
-    dispatch(clearLMOList());
     handleStatusChange("");
     handleSearchChange("");
     setValidationError("");
   };
 
   const hasActiveFilters = search || status;
-  const lmoListData: LMOList[] = Array.isArray(lmoList) ? lmoList : [];
+  const lmoListData: DoctorDashboardLMO[] = Array.isArray(archiveLMOsList)
+    ? archiveLMOsList
+    : [];
+  console.log(archiveLMOsList);
 
-  const filteredLMOs = lmoListData.filter((c: LMOList) => {
-    return true;
+  const filteredLMOs = lmoListData.filter((c: DoctorDashboardLMO) => {
+    const searchMatch =
+      c.conscript_name.toLowerCase().includes(search.toLowerCase()) ||
+      c.conscript_iin.includes(search);
+
+    return searchMatch;
   });
 
   return (
