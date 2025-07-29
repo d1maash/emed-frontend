@@ -4,8 +4,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Ellipsis } from "lucide-react";
 import { LMOList } from "@/types/lmo";
 import { formatDateDmmmmYYYY } from "@/utils/dateUtils";
+import { DoctorDashboardLMO } from "@/types/doctor";
 
-export const columns: ColumnDef<LMOList>[] = [
+export const columns: ColumnDef<DoctorDashboardLMO>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -40,9 +41,9 @@ export const columns: ColumnDef<LMOList>[] = [
     header: "ФИО",
     cell: ({ row }) => (
       <div>
-        <div>{row.original.conscript.full_name}</div>
+        <div>{row.original.conscript_name}</div>
         <div className="text-xs text-muted-foreground">
-          {row.original.conscript.email}
+          {row.original.conscript_phone}
         </div>
       </div>
     ),
@@ -51,13 +52,21 @@ export const columns: ColumnDef<LMOList>[] = [
   {
     accessorKey: "iin",
     header: "ИИН",
-    cell: ({ row }) => row.original.conscript.iin,
+    cell: ({ row }) => row.original.conscript_iin,
     size: 120,
   },
   {
-    accessorKey: "fitnessCategory",
-    header: "Спортивная категория",
-    cell: ({ row }) => row.original.fitness_category_display,
+    accessorKey: "canExamine",
+    header: "Готов к осмотру",
+    cell: ({ row }) => (
+      <div>
+        {!!row.original.can_examine ? (
+          <Badge> Да </Badge>
+        ) : (
+          <Badge> Нет </Badge>
+        )}
+      </div>
+    ),
     size: 140,
   },
   {
@@ -69,7 +78,7 @@ export const columns: ColumnDef<LMOList>[] = [
   {
     accessorKey: "status",
     header: "Статус",
-    cell: ({ row }) => <span>{row.original.status_display}</span>,
+    cell: ({ row }) => <span>{row.original.lmo_status_display}</span>,
     size: 120,
   },
   {

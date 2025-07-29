@@ -80,6 +80,9 @@ const doctorDashboardSlice = createSlice({
       state.archiveLMOsList = null;
       state.error = null;
     },
+    clearError: (state) => {
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -102,13 +105,28 @@ const doctorDashboardSlice = createSlice({
       })
       .addCase(getActiveLMOs.fulfilled, (state, action) => {
         state.loading = false;
-        state.data = action.payload.active_lmos;
+        state.activeLMOsList = action.payload.active_lmos;
       })
       .addCase(getActiveLMOs.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // *Загрузка архивных ЛМО
+      .addCase(GetArchiveLMOs.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(GetArchiveLMOs.fulfilled, (state, action) => {
+        state.loading = false;
+        state.archiveLMOsList = action.payload.archive_lmos;
+      })
+      .addCase(GetArchiveLMOs.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
   },
 });
 
+export const { clearActiveLMOsList, clearArchiveLMOsList, clearError } =
+  doctorDashboardSlice.actions;
 export default doctorDashboardSlice.reducer;
