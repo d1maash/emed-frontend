@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export const columns: ColumnDef<Recruit>[] = [
+export const columns: ColumnDef<CommissionHearingList>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => (
@@ -24,7 +24,7 @@ export const columns: ColumnDef<Recruit>[] = [
     size: 70,
   },
   {
-    accessorKey: "fullname",
+    accessorKey: "conscriptName",
     header: ({ column }) => (
       <button
         type="button"
@@ -36,22 +36,22 @@ export const columns: ColumnDef<Recruit>[] = [
         {column.getIsSorted() === "desc" && <ArrowDown className="w-4 h-4" />}
       </button>
     ),
-    cell: ({ row }) => row.original.fullname,
+    cell: ({ row }) => row.original.conscript_name,
   },
   {
-    accessorKey: "iin",
+    accessorKey: "hearingDate",
     header: ({ column }) => (
       <button
         type="button"
         className="flex items-center gap-1 select-none"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        ИИН
+        Дата слушания
         {column.getIsSorted() === "asc" && <ArrowUp className="w-4 h-4" />}
         {column.getIsSorted() === "desc" && <ArrowDown className="w-4 h-4" />}
       </button>
     ),
-    cell: ({ row }) => row.original.iin,
+    cell: ({ row }) => row.original.hearing_date,
     size: 95,
   },
   {
@@ -73,13 +73,13 @@ export const columns: ColumnDef<Recruit>[] = [
         <Badge
           className={cn(
             "rounded-full",
-            value === "Ждет решения"
+            value === "scheduled"
               ? "bg-[--warning] text-[#7A5E00] hover:bg-[#7A5E00] hover:text-white"
-              : value === "Решение принято" &&
+              : value === "completed" &&
                   "bg-[#2AD97F]/20 text-[#1D9E4B] hover:text-white hover:bg-[#1D9E4B]"
           )}
         >
-          {value}
+          {row.original.status_display}
         </Badge>
       );
     },
@@ -92,7 +92,7 @@ export const columns: ColumnDef<Recruit>[] = [
   },
 ];
 
-const OptionsCell = ({ id }: { id: string }) => {
+const OptionsCell = ({ id }: { id: number }) => {
   const router = useRouter();
   return (
     <button

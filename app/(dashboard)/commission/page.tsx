@@ -17,7 +17,7 @@ import { getCommissionDashboard } from "@/store/slices/commissionDashboardSlice"
 const Page = () => {
   const dispatch = useAppDispatch();
   const {
-    data = null,
+    current_hearings = null,
     loading = false,
     error = null,
   } = useAppSelector((state) => state.commissionDashboard || {});
@@ -26,18 +26,20 @@ const Page = () => {
   const [globalFilter, setGlobalFilter] = useState("");
 
   useEffect(() => {
-    if (user && user.role === "commission" && !data && access) {
+    if (user && user.role === "commission" && !current_hearings && access) {
       dispatch(getCommissionDashboard(access));
     }
-  }, [user, data, access, dispatch]);
+  }, [user, current_hearings, access, dispatch]);
 
   if (!user || user.role !== "commission" || loading) return <LoadingScreen />;
   if (error) return <div className="text-red-500">{error}</div>;
 
-  const filteredRecruits = recruits.filter((r) => {
+  const hearings = Array.isArray(current_hearings) ? current_hearings : [];
+
+  const filteredHearings = hearings.filter((h) => {
     const matchesText =
-      r.fullname.toLowerCase().includes(globalFilter.toLowerCase()) ||
-      String(r.id).includes(globalFilter);
+      h.conscript_name.toLowerCase().includes(globalFilter.toLowerCase()) ||
+      String(h.id).includes(globalFilter);
 
     return matchesText;
   });
@@ -58,7 +60,19 @@ const Page = () => {
           />
         </div>
         <div className="border w-full rounded-xl">
-          <RecruitTable data={filteredRecruits} />
+          <RecruitTable data={filteredHearings} />
+
+          {/* Сообщение когда нет поиска */}
+          {!globalFilter ||
+            (!loading && filteredHearings.length === 0 && (
+              <div className="text-center p-8 text-gray-500">
+                <Search className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p>Введите поисковый запрос для поиска</p>
+                <p className="text-sm mt-2">
+                  С текущими фильтрами ничего не найдено
+                </p>
+              </div>
+            ))}
         </div>
         <div className="grid @2xl:grid-cols-3 gap-6">
           <DecorationCard

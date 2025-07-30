@@ -24,7 +24,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface RecruitTableProps {
-  data: Recruit[];
+  data: CommissionHearingList[];
 }
 
 export const RecruitTable: React.FC<RecruitTableProps> = ({ data }) => {
