@@ -4,6 +4,7 @@ import recruitDashboardReducer from "./slices/recruitDashboardSlice";
 import coordinatorDashboardReducer from "./slices/coordinatorDashboardSlice";
 import doctorDashboardReducer from "./slices/doctorDashboardSlice";
 import commissionDashboardReducer from "./slices/commissionDashboardSlice";
+import commissionHearingReducer from "./slices/commissionHearingSlice";
 import searchReducer from "./slices/searchSlice";
 import applicationReducer from "./slices/applicationSlice";
 import lmoReducer from "./slices/lmoSlice";
@@ -19,6 +20,7 @@ export const store = configureStore({
     coordinatorDashboard: coordinatorDashboardReducer,
     doctorDashboard: doctorDashboardReducer,
     commissionDashboard: commissionDashboardReducer,
+    commissionHearing: commissionHearingReducer,
     application: applicationReducer,
     lmo: lmoReducer,
     conscripts: conscriptsReducer,

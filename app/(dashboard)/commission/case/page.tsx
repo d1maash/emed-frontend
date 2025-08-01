@@ -16,12 +16,15 @@ import { ChevronLeft, ChevronRight, Printer, Weight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { Banner } from "@/components/myui/Banner";
 import Textarea from "@/components/myui/MyTextarea";
 import DownloadList from "./_component/DownloadList";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { getCommissionHearingDetailById } from "@/store/slices/commissionHearingSlice";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const schema = z.object({
   fit: z.boolean(),
@@ -36,6 +39,9 @@ type FormData = z.infer<typeof schema>;
 type DecisionField = "fit" | "unfit" | "defer";
 
 const CommissionCasePage = () => {
+  const router = useRouter();
+  const params = useSearchParams();
+  const dispatch = useAppDispatch();
   const {
     register,
     handleSubmit,
@@ -53,6 +59,23 @@ const CommissionCasePage = () => {
     },
   });
 
+  const [hearingID, setHearingID] = useState("");
+
+  const access = useAppSelector((state) => state.auth.access);
+  const user = useAppSelector((state) => state.auth.user);
+  const {
+    currentHearing = null,
+    loading = false,
+    error = null,
+  } = useAppSelector((state) => state.commissionHearing || {});
+  useEffect(() => {
+    const id = params.get("id");
+    if (id && user && user.role === "commission" && !currentHearing && access) {
+      setHearingID(id);
+      dispatch(getCommissionHearingDetailById({ access, HearingId: id }));
+    }
+  }, [user, params, access, dispatch]);
+
   const handleCheckbox = (field: DecisionField) => {
     setValue("fit", field === "fit");
     setValue("unfit", field === "unfit");
@@ -64,9 +87,6 @@ const CommissionCasePage = () => {
     alert("Решение сохранено");
   };
 
-  const router = useRouter();
-  const params = useSearchParams();
-
   //   TODO: Delete on Prod
   const id = "404 404 404 404";
   const isLegal = true;
@@ -74,96 +94,12 @@ const CommissionCasePage = () => {
 
   const NCALayerStatus = "warning";
 
-  const user = {
-    id: "25541213",
-    full_name: "Иванович Иван Иванов",
-    iin: "070707777777",
-    height: "181",
-    weight: "72",
-    bmi: "22",
-    decision: "defer",
-    doctors: [
-      {
-        id: "123",
-        speciality: "Хирург",
-        full_name: "Макс Максимов",
-        examination:
-          "Проведен осмотр операционной раны, признаки воспаления отсутствуют.",
-        complaints: "Боль в области послеоперационного шва.",
-        conclusion: "Состояние после аппендэктомии, заживление без осложнений.",
-        recommendation:
-          "Продолжить обработку шва, избегать физических нагрузок 7 дней.",
-        comment: "Контрольный осмотр через 3 дня.",
-      },
-      {
-        id: "122",
-        speciality: "Кардиолог",
-        full_name: "Настя Ивлеева",
-        examination:
-          "Аускультация сердца — ритм правильный, шумов нет, давление 120/80.",
-        complaints:
-          "Периодические боли в области сердца, учащенное сердцебиение.",
-        conclusion: "Признаков ишемической болезни сердца не выявлено.",
-        recommendation:
-          "Соблюдать режим труда и отдыха, ограничить стресс, повторная ЭКГ через месяц.",
-        comment: "Рекомендовано наблюдение у терапевта.",
-      },
-      {
-        id: "124",
-        speciality: "Терапевт",
-        full_name: "Ольга Петрова",
-        examination:
-          "Температура 37.5°C, горло гиперемировано, миндалины увеличены.",
-        complaints: "Боль в горле, слабость, температура.",
-        conclusion: "Острый тонзиллит.",
-        recommendation:
-          "Постельный режим, обильное питье, полоскание горла, жаропонижающее при необходимости.",
-        comment: "Повторный осмотр при ухудшении состояния.",
-      },
-      {
-        id: "125",
-        speciality: "Невролог",
-        full_name: "Артём Сидоров",
-        examination: "Неврологический статус без очаговой симптоматики.",
-        complaints: "Головные боли, головокружение.",
-        conclusion: "Мигрень, обострение.",
-        recommendation:
-          "Приём назначенных препаратов, избегать переутомления, консультация через 2 недели.",
-        comment: "Рекомендовано ведение дневника головной боли.",
-      },
-    ],
-  };
-
-  const files = [
-    {
-      id: "12345",
-      name: "ЭКГ_заключение",
-      extension: "pdf",
-      size: "3.1MB",
-      src: "#",
-    },
-    {
-      id: "12345",
-      name: "ЭКГ_заключение",
-      extension: "pdf",
-      size: "3.1MB",
-      src: "#",
-    },
-    {
-      id: "12345",
-      name: "Эта страница",
-      extension: "html",
-      size: "3.1MB",
-      src: "#",
-    },
-  ];
-
-  if (!id || !isLegal) {
+  if (!id) {
     return (
       <div className="flex flex-col gap-4 text-center ">
         <h2 className="text-xl sm:text-2xl font-medium">
           <div className="font-bold text-2xl sm:text-3xl">{id}</div>
-          Призывник с таким ID не найден.
+          Слушанее с таким ID не найдено.
         </h2>
         <div className="grid md:grid-cols-2 gap-3">
           <MyButton
@@ -184,15 +120,17 @@ const CommissionCasePage = () => {
     );
   }
 
+  if (loading || !user) return <LoadingScreen />;
+  if (!currentHearing) return <div className="p-6">Слушанее не найдено</div>;
   return (
     <>
       <div className="border border-[--primary-30] rounded-xl min-h-12 p-4 gap-4 2xl:p-8 2xl:gap-8 grid xl:grid-cols-3">
         <div
           className={cn(
             "xl:col-span-2 p-6 rounded-xl border min-h-max bg-white",
-            user.decision == "fit" && "border-[--success] border-2",
-            user.decision == "unfit" && "border-[--error] border-2",
-            user.decision == "defer" && "border-[--warning] border-2"
+            currentHearing.decision == "fit" && "border-[--success] border-2",
+            currentHearing.decision == "unfit" && "border-[--error] border-2",
+            currentHearing.decision == "defer" && "border-[--warning] border-2"
           )}
         >
           <div className="flex gap-3">
@@ -219,9 +157,9 @@ const CommissionCasePage = () => {
               <h3 className="text-muted-foreground font-medium mb-1">
                 Общие данные
               </h3>
-              <p className="text-base">Рост: {user.height} см</p>
-              <p className="text-base">Вес: {user.weight} кг</p>
-              <p className="text-base">ИМТ: {user.bmi}</p>
+              <p className="text-base">Рост: {currentHearing.lmo.height} см</p>
+              <p className="text-base">Вес: {currentHearing.lmo.weight} кг</p>
+              <p className="text-base">ИМТ: {currentHearing.lmo.bmi}</p>
             </div>
             <div>
               <Separator
@@ -232,33 +170,31 @@ const CommissionCasePage = () => {
                 Осмотры врачей
               </h3>
             </div>
-            {user.doctors.length == 0 ? (
+            {currentHearing.lmo.medical_records.length == 0 ? (
               <div>Осмотры не найдены</div>
             ) : (
               <div className="flex flex-col">
                 {/* Doctors List */}
                 <Accordion type="multiple">
-                  {user.doctors.map((doctor) => (
-                    <AccordionItem key={doctor.id} value={doctor.id}>
+                  {currentHearing.lmo.medical_records.map((mr) => (
+                    <AccordionItem key={mr.id} value={mr.doctor.full_name}>
                       <AccordionTrigger className="flex justify-between py-2">
                         <h4 className="text-base font-medium">
-                          {doctor.speciality}
+                          {mr.doctor.specialty}
                         </h4>
                       </AccordionTrigger>
                       <AccordionContent className="flex flex-col">
-                        <p>Врач: {doctor.full_name}</p>
-                        <p>Осмотр: {doctor.examination}</p>
-                        <p>Жалобы: {doctor.complaints}</p>
-                        <p>Заключение: {doctor.conclusion}</p>
-                        <p>Рекомендация: {doctor.recommendation}</p>
-                        <p>Комментарий: {doctor.comment}</p>
+                        <p>Врач: {mr.doctor.full_name}</p>
+                        <p>Осмотр: {mr.examination_date}</p>
+                        <p>Заключение: {mr.diagnosis}</p>
+                        <p>Рекомендация: {mr.recommendations}</p>
                       </AccordionContent>
                     </AccordionItem>
                   ))}
                 </Accordion>
               </div>
             )}
-            <DownloadList files={files} />
+            {/* <DownloadList files={files} /> */}
           </div>
         </div>
         <div className="flex flex-col gap-4">
