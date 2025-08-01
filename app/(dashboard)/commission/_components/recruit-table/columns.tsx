@@ -1,12 +1,12 @@
 // src/components/columns.tsx
 import { ColumnDef } from "@tanstack/react-table";
-import { Recruit } from "./types";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { CommissionHearingList } from "@/types/commission";
 
-export const columns: ColumnDef<Recruit>[] = [
+export const columns: ColumnDef<CommissionHearingList>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => (
@@ -36,10 +36,10 @@ export const columns: ColumnDef<Recruit>[] = [
         {column.getIsSorted() === "desc" && <ArrowDown className="w-4 h-4" />}
       </button>
     ),
-    cell: ({ row }) => row.original.fullname,
+    cell: ({ row }) => row.original.conscript_name,
   },
   {
-    accessorKey: "iin",
+    accessorKey: "priorityLevel",
     header: ({ column }) => (
       <button
         type="button"
@@ -51,7 +51,7 @@ export const columns: ColumnDef<Recruit>[] = [
         {column.getIsSorted() === "desc" && <ArrowDown className="w-4 h-4" />}
       </button>
     ),
-    cell: ({ row }) => row.original.iin,
+    cell: ({ row }) => row.original.priority_level,
     size: 95,
   },
   {
@@ -73,9 +73,9 @@ export const columns: ColumnDef<Recruit>[] = [
         <Badge
           className={cn(
             "rounded-full",
-            value === "Ждет решения"
+            value === "in_progress"
               ? "bg-[--warning] text-[#7A5E00] hover:bg-[#7A5E00] hover:text-white"
-              : value === "Решение принято" &&
+              : value === "completed" &&
                   "bg-[#2AD97F]/20 text-[#1D9E4B] hover:text-white hover:bg-[#1D9E4B]"
           )}
         >
@@ -92,7 +92,7 @@ export const columns: ColumnDef<Recruit>[] = [
   },
 ];
 
-const OptionsCell = ({ id }: { id: string }) => {
+const OptionsCell = ({ id }: { id: number }) => {
   const router = useRouter();
   return (
     <button

@@ -1,14 +1,20 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { getCommissionDashboard as getCommissionDashboardApi } from "@/api/commission";
+import {
+  CommissionDashboardResponse,
+  getCommissionDashboard as getCommissionDashboardApi,
+} from "@/api/commission";
+import { CommissionHearingList } from "@/types/commission";
 
 interface CommissionDashboardState {
   data: any;
+  hearingList: CommissionHearingList[] | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: CommissionDashboardState = {
   data: null,
+  hearingList: null,
   loading: false,
   error: null,
 };
@@ -39,6 +45,7 @@ const commissionDashboardSlice = createSlice({
       })
       .addCase(getCommissionDashboard.fulfilled, (state, action) => {
         state.loading = false;
+        state.hearingList = action.payload.current_hearings;
         state.data = action.payload;
       })
       .addCase(getCommissionDashboard.rejected, (state, action) => {

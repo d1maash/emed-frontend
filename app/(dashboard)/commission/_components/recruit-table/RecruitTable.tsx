@@ -11,7 +11,6 @@ import {
   SortingState,
 } from "@tanstack/react-table";
 import { columns } from "./columns";
-import { Recruit } from "./types";
 import {
   Table,
   TableBody,
@@ -22,9 +21,10 @@ import {
 } from "@/components/ui/table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CommissionHearingList } from "@/types/commission";
 
 interface RecruitTableProps {
-  data: Recruit[];
+  data: CommissionHearingList[];
 }
 
 export const RecruitTable: React.FC<RecruitTableProps> = ({ data }) => {
